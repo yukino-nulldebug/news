@@ -123,6 +123,21 @@ body {
   overflow: auto;
 }
 
+.slide-scope {
+  aspect-ratio: auto;
+  min-height: 0;
+  gap: var(--space-3);
+  overflow: visible;
+}
+
+.slide-scope .two-col {
+  gap: var(--space-3);
+}
+
+.slide-scope .panel {
+  padding: var(--space-3);
+}
+
 .cover {
   justify-content: flex-start;
 }
@@ -303,7 +318,7 @@ code {
   width: 100%;
   margin-top: var(--space-1);
   display: flex;
-  flex: 1;
+  flex: 0 1 auto;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -322,6 +337,18 @@ code {
   align-items: center;
   justify-items: center;
   column-gap: var(--space-5);
+}
+
+.slide-scope .scope-diagram {
+  max-width: 880px;
+  margin-inline: auto;
+  justify-content: flex-start;
+}
+
+.slide-scope .scope-diagram-row {
+  max-width: 860px;
+  grid-template-columns: minmax(120px, 1fr) 240px minmax(120px, 1fr);
+  column-gap: var(--space-3);
 }
 
 .outside-area {
@@ -345,6 +372,11 @@ code {
   line-height: var(--line-height-ui);
 }
 
+.slide-scope .outside-item {
+  width: min(100%, 180px);
+  padding: 6px var(--space-2);
+}
+
 .scope-boundary {
   width: min(100%, 320px);
   aspect-ratio: 1 / 1;
@@ -358,6 +390,11 @@ code {
   padding: var(--space-5);
 }
 
+.slide-scope .scope-boundary {
+  width: 240px;
+  padding: var(--space-4);
+}
+
 .scope-title {
   margin: 0 0 var(--space-3);
   font-size: var(--font-size-heading-sm);
@@ -365,6 +402,11 @@ code {
   font-weight: 700;
   color: var(--color-text);
   text-align: center;
+}
+
+.slide-scope .scope-title {
+  margin-bottom: var(--space-2);
+  font-size: var(--font-size-body);
 }
 
 .inside-list {
@@ -384,6 +426,11 @@ code {
   font-size: var(--font-size-caption);
   font-weight: 700;
   line-height: var(--line-height-ui);
+}
+
+.slide-scope .inside-list li {
+  padding: 6px var(--space-2);
+  margin-bottom: 6px;
 }
 
 .inside-list li:last-child {
@@ -423,6 +470,42 @@ code {
 
   .scope-boundary {
     width: min(100%, 320px);
+  }
+}
+
+@media (max-width: 900px) {
+  .slide-scope .scope-diagram-row {
+    grid-template-columns: 1fr;
+    max-width: 360px;
+    row-gap: var(--space-3);
+  }
+
+  .slide-scope .outside-area {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .slide-scope .outside-item {
+    flex: 1 1 150px;
+    max-width: 180px;
+  }
+
+  .slide-scope .scope-boundary {
+    width: min(100%, 240px);
+  }
+}
+
+@media (max-width: 480px) {
+  .slide {
+    padding: var(--space-4);
+  }
+
+  .slide-scope .scope-boundary {
+    width: min(100%, 220px);
+  }
+
+  .slide-scope .outside-item {
+    max-width: 100%;
   }
 }
 
