@@ -8,10 +8,10 @@
   </head>
   <body>
     <header class="deck-header">
-      <p class="deck-label">Requirement Deck</p>
+      <p class="deck-label">Portfolio Requirement Deck</p>
       <h1>Morning News 要件定義（MVP）</h1>
       <ul class="deck-meta">
-        <li>版: v0.3（草案）</li>
+        <li>版: v0.5（草案）</li>
         <li>更新日: 2026-05-15</li>
         <li>正本: 要件定義.md</li>
       </ul>
@@ -20,19 +20,22 @@
     <main class="deck">
       <article class="slide cover" id="slide-01">
         <p class="slide-index">01</p>
-        <h2>目的</h2>
+        <h2>概要</h2>
         <p class="lead">
-          ユーザーが朝の情報収集にかける時間を減らすため、ニュースとマーケット情報を自動収集し、
-          重要情報を要約・分類して毎朝レポートとして保存する。
+          Morning News は、朝の情報収集にかける時間を減らすため、ニュースとマーケット情報を自動収集し、
+          日次Markdownレポートとして保存するバッチ型アプリケーションである。
+        </p>
+        <p class="lead">
+          本MVPでは、ニュース本文全文やAIによる高度な要約ではなく、API/RSSから取得できる概要文を整形して掲載する。
         </p>
         <div class="highlights">
           <section class="highlight">
-            <h3>対象業務</h3>
-            <p>朝の情報収集</p>
+            <h3>MVP方針</h3>
+            <p>API/RSS概要文を整形</p>
           </section>
           <section class="highlight">
-            <h3>提供価値</h3>
-            <p>収集時間の短縮</p>
+            <h3>掲載情報</h3>
+            <p>タイトル・URL・配信元・公開日時・短い概要</p>
           </section>
           <section class="highlight">
             <h3>成果物</h3>
@@ -43,6 +46,20 @@
 
       <article class="slide" id="slide-02">
         <p class="slide-index">02</p>
+        <h2>ポートフォリオで示すこと</h2>
+        <section class="panel">
+          <ul>
+            <li>要件定義から機能分割、受け入れ条件まで一貫して設計できること</li>
+            <li>API/RSS取得、データ整形、Markdown出力、ログ記録を小さなアプリとしてまとめられること</li>
+            <li>APIキーがない閲覧者でも <code>sample</code> モードで動作確認できること</li>
+            <li><code>.env</code> やAPIキーを公開しない前提で、GitHub公開に耐える構成にできること</li>
+            <li>市況コメントは情報提供に限定し、投資助言と誤認されないように扱えること</li>
+          </ul>
+        </section>
+      </article>
+
+      <article class="slide" id="slide-03">
+        <p class="slide-index">03</p>
         <h2>想定ユーザーと課題</h2>
         <div class="two-col">
           <section class="panel">
@@ -50,6 +67,7 @@
             <ul>
               <li>毎朝、国内外ニュースと市場動向を短時間で把握したい個人ユーザー</li>
               <li>業務開始前に「前日から当朝までの要点」を確認したいビジネスユーザー</li>
+              <li>API連携・バッチ処理・Markdown出力の実装例を確認したい閲覧者</li>
             </ul>
           </section>
           <section class="panel">
@@ -58,36 +76,68 @@
               <li>ニュースと株価の関係を同じレポートで確認できない</li>
               <li>複数サイト巡回による情報収集時間が長い</li>
               <li>過去レポートを日付ベースで参照しづらい</li>
+              <li>APIキーがない環境でも成果物の動作を確認しづらい</li>
             </ol>
           </section>
         </div>
       </article>
 
-      <article class="slide" id="slide-03">
-        <p class="slide-index">03</p>
-        <h2>スコープ</h2>
+      <article class="slide" id="slide-04">
+        <p class="slide-index">04</p>
+        <h2>成功条件</h2>
+        <div class="two-col">
+          <section class="panel">
+            <h3>レポート生成</h3>
+            <ul class="compact-list">
+              <li>毎朝1回、手動または定時実行でレポートを生成できる</li>
+              <li>国内ニュース、海外ニュース、マーケット情報が1つのMarkdownにまとまる</li>
+              <li>各ニュースにタイトル・URL・配信元・公開日時・短い概要が含まれる</li>
+              <li>日経平均、S&amp;P500、USD/JPY の現在値と前日比を確認できる</li>
+              <li>市況コメントに「投資助言ではない」注記が表示される</li>
+              <li>生成されたレポートを過去日付ごとに参照できる</li>
+            </ul>
+          </section>
+          <section class="panel">
+            <h3>公開・再現性</h3>
+            <ul class="compact-list">
+              <li>取得失敗時に処理が完全停止せず、失敗理由がログに残る</li>
+              <li><code>.env</code> に設定したAPIキーをGitHubへ公開しない</li>
+              <li>APIキーなしでも <code>sample</code> モードでレポート生成を確認できる</li>
+              <li>READMEの手順どおりに第三者がローカルで動作確認できる</li>
+              <li><code>.env.example</code> に必要な環境変数が明記されている</li>
+              <li>GitHubに機密情報が含まれていない</li>
+              <li>サンプルレポートから、アプリの目的と出力内容が理解できる</li>
+            </ul>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide" id="slide-05">
+        <p class="slide-index">05</p>
+        <h2>MVPスコープ</h2>
         <div class="two-col">
           <section class="panel panel-in">
-            <h3>MVP対象</h3>
-            <ul>
-              <li>API/RSSで記事情報を取得（タイトル・URL・配信元・概要文）</li>
+            <h3>MVPでやる</h3>
+            <ul class="compact-list">
+              <li>API/RSSで記事情報を取得（タイトル・URL・配信元・公開日時・概要文）</li>
               <li>概要文を整形し、短い概要を生成</li>
-              <li>タイトル・URL・配信元・短い概要をレポート掲載</li>
+              <li>タイトル・URL・配信元・公開日時・短い概要をレポート掲載</li>
               <li>株価・指数・為替の取得と前日比計算</li>
-              <li>参考用の投資判断コメントを定型文で追加（投資助言はしない）</li>
+              <li>市況コメント（参考）を定型ルールで追加</li>
               <li>日次Markdownレポート生成と保存</li>
-              <li>処理失敗時のログ記録</li>
+              <li><code>sample</code> モードとエラーログを用意</li>
             </ul>
           </section>
           <section class="panel panel-out">
-            <h3>MVP非対象</h3>
-            <ul>
+            <h3>MVPではやらない</h3>
+            <ul class="compact-list">
               <li>AIによる高度な要約</li>
               <li>ニュース本文全文の解析</li>
+              <li>有料記事やログイン後ページの本文取得</li>
               <li>ユーザーごとの高度な推薦アルゴリズム</li>
               <li>自動売買シグナルの生成</li>
-              <li>Web UIでの編集機能</li>
-              <li>モバイル通知連携</li>
+              <li>売買推奨や投資助言</li>
+              <li>Web UI・モバイル通知・スマホアプリ化</li>
             </ul>
           </section>
         </div>
@@ -95,17 +145,15 @@
           <h3>スコープ境界図</h3>
           <div class="scope-diagram-row">
             <div class="outside-area outside-left">
-              <div class="outside-item">
-                AIによる高度な要約
-              </div>
+              <div class="outside-item">AIによる高度な要約</div>
             </div>
             <div class="scope-boundary">
               <p class="scope-title">Morning News スコープ</p>
               <ul class="inside-list">
                 <li>API/RSSから記事情報取得</li>
-                <li>概要文の整形（短文化）</li>
-                <li>タイトル/URL/配信元/概要の掲載</li>
-                <li>市況データ＋参考コメント付与</li>
+                <li>概要文の整形</li>
+                <li>市況データ取得</li>
+                <li>Markdownレポート生成</li>
               </ul>
             </div>
             <div class="outside-area outside-right">
@@ -116,9 +164,9 @@
         </div>
       </article>
 
-      <article class="slide" id="slide-04">
-        <p class="slide-index">04</p>
-        <h2>機能要件（MVP）</h2>
+      <article class="slide" id="slide-06">
+        <p class="slide-index">06</p>
+        <h2>機能要件</h2>
         <div class="table-wrap">
           <table>
             <caption>MVP機能一覧</caption>
@@ -127,7 +175,7 @@
                 <th>ID</th>
                 <th>優先度</th>
                 <th>機能</th>
-                <th>要件（MUST/SHOULD）</th>
+                <th>要件</th>
               </tr>
             </thead>
             <tbody>
@@ -135,63 +183,182 @@
                 <td>F-01</td>
                 <td>MUST</td>
                 <td>国内ニュース取得</td>
-                <td>ニュースAPI/RSSから国内カテゴリ記事を取得し、タイトル・URL・配信元・概要文を保持する。</td>
+                <td>タイトル・URL・配信元・公開日時・概要文を保持する。</td>
               </tr>
               <tr>
                 <td>F-02</td>
                 <td>MUST</td>
                 <td>海外ニュース取得</td>
-                <td>ニュースAPI/RSSから海外カテゴリ記事を取得し、タイトル・URL・配信元・概要文を保持する。</td>
+                <td>タイトル・URL・配信元・公開日時・概要文を保持する。</td>
               </tr>
               <tr>
                 <td>F-03</td>
                 <td>MUST</td>
                 <td>概要文整形</td>
-                <td>取得した概要文を整形し、最大文字数をそろえた短い概要を生成する。</td>
+                <td>不要改行・重複空白を除き、短い概要を生成する。</td>
               </tr>
               <tr>
-                <td>F-04</td>
+                <td>F-04/F-05</td>
                 <td>MUST</td>
-                <td>マーケット情報取得</td>
-                <td>日経平均、S&amp;P500、USD/JPY を最低対象として価格を取得する。</td>
+                <td>市況取得・変化率計算</td>
+                <td>日経平均、S&amp;P500、USD/JPY の現在値・前日比・変化率を扱う。</td>
               </tr>
               <tr>
-                <td>F-05</td>
+                <td>F-06/F-08</td>
                 <td>MUST</td>
-                <td>変化率計算</td>
-                <td>前営業日終値を基準として前日比（%）を計算する。</td>
-              </tr>
-              <tr>
-                <td>F-06</td>
-                <td>MUST</td>
-                <td>レポート生成</td>
-                <td>タイトル・URL・配信元・短い概要、主要市況データを含むMarkdownを生成する。</td>
+                <td>レポート生成・保存</td>
+                <td><code>reports/YYYY-MM-DD.md</code> にMarkdownを保存する。</td>
               </tr>
               <tr>
                 <td>F-07</td>
                 <td>SHOULD</td>
-                <td>投資判断コメント（参考）</td>
-                <td>定型ルールに基づく参考コメントを追記し、「投資助言ではない」注記を明示する。</td>
+                <td>市況コメント</td>
+                <td>情報提供に限定し、投資助言と誤認される表現を使わない。</td>
               </tr>
               <tr>
-                <td>F-08</td>
-                <td>MUST</td>
-                <td>レポート保存</td>
-                <td><code>reports/YYYY-MM-DD.md</code> 形式で保存する。</td>
-              </tr>
-              <tr>
-                <td>F-09</td>
-                <td>SHOULD</td>
-                <td>エラーログ</td>
-                <td>取得/変換/保存の各失敗を日時・機能ID付きで記録する。</td>
+                <td>F-09/F-10</td>
+                <td>SHOULD/MUST</td>
+                <td>ログ・サンプル実行</td>
+                <td>失敗理由をログに残し、APIキーなしでもサンプル実行できる。</td>
               </tr>
             </tbody>
           </table>
         </div>
       </article>
 
-      <article class="slide" id="slide-05">
-        <p class="slide-index">05</p>
+      <article class="slide" id="slide-07">
+        <p class="slide-index">07</p>
+        <h2>データ取得方針</h2>
+        <div class="table-wrap">
+          <table>
+            <caption>取得対象と扱わない内容</caption>
+            <thead>
+              <tr>
+                <th>データ種別</th>
+                <th>取得方法</th>
+                <th>MVPで扱う内容</th>
+                <th>扱わない内容</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>国内ニュース</td>
+                <td>RSS / News API</td>
+                <td>タイトル、URL、配信元、公開日時、概要文</td>
+                <td>本文全文、有料記事、ログイン後ページ</td>
+              </tr>
+              <tr>
+                <td>海外ニュース</td>
+                <td>RSS / News API / GDELT等</td>
+                <td>タイトル、URL、配信元、公開日時、概要文</td>
+                <td>本文全文、自動翻訳全文保存</td>
+              </tr>
+              <tr>
+                <td>マーケット情報</td>
+                <td>株価API</td>
+                <td>現在値、前日終値、前日比、変化率</td>
+                <td>自動売買、売買推奨</td>
+              </tr>
+              <tr>
+                <td>サンプルデータ</td>
+                <td>JSONファイル</td>
+                <td>APIなしで動作確認できる固定データ</td>
+                <td>実運用データとしての利用</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="slide" id="slide-08">
+        <p class="slide-index">08</p>
+        <h2>レポート出力仕様</h2>
+        <div class="code-preview">
+          <pre><code># Morning News Report
+作成日時: YYYY-MM-DD HH:mm JST
+
+## 1. 今日の注目ポイント
+## 2. 国内ニュース
+- タイトル
+  - 配信元:
+  - 公開日時:
+  - 概要:
+  - URL:
+
+## 3. 海外ニュース
+## 4. マーケット情報
+| 対象 | 現在値 | 前日比 | 変化率 |
+
+## 5. 市況コメント
+## 6. 注意事項
+本レポートは情報提供を目的としており、投資助言ではありません。</code></pre>
+        </div>
+      </article>
+
+      <article class="slide" id="slide-09">
+        <p class="slide-index">09</p>
+        <h2>実行モード</h2>
+        <div class="two-col">
+          <section class="panel">
+            <h3>モード</h3>
+            <table class="mini-table">
+              <thead>
+                <tr>
+                  <th>モード</th>
+                  <th>用途</th>
+                  <th>取得元</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>sample</td>
+                  <td>ポートフォリオ確認用</td>
+                  <td><code>sample_data/*.json</code></td>
+                </tr>
+                <tr>
+                  <td>api</td>
+                  <td>実データ取得用</td>
+                  <td>API / RSS</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+          <section class="panel">
+            <h3>要件</h3>
+            <ul>
+              <li><code>APP_MODE=sample</code> ではAPIキーなしでレポート生成できる</li>
+              <li><code>APP_MODE=api</code> では <code>.env</code> のAPIキーを使う</li>
+              <li>未設定時は <code>sample</code> モードで安全に起動できる</li>
+            </ul>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide" id="slide-10">
+        <p class="slide-index">10</p>
+        <h2>非機能要件</h2>
+        <div class="two-col">
+          <section class="panel">
+            <h3>運用品質</h3>
+            <ul>
+              <li>朝の定時バッチ1回あたり5分以内を目標とする</li>
+              <li>成功/失敗件数と最終実行時刻をログで追跡できる</li>
+              <li>データソースやカテゴリを設定ファイルで変更可能にする</li>
+            </ul>
+          </section>
+          <section class="panel">
+            <h3>安全性</h3>
+            <ul>
+              <li>APIキー等の機密情報は環境変数で管理し、レポートへ出力しない</li>
+              <li>市況コメントは参考情報に限定し、投資助言と誤認される表現を避ける</li>
+              <li>APIキーがなくても <code>sample</code> モードで主要機能を確認できる</li>
+            </ul>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide" id="slide-11">
+        <p class="slide-index">11</p>
         <h2>受け入れ条件</h2>
         <div class="table-wrap">
           <table>
@@ -205,85 +372,114 @@
             <tbody>
               <tr>
                 <td>F-01/F-02</td>
-                <td>各カテゴリで最低1件以上の記事について、タイトル・URL・配信元・概要文を取得できる。</td>
+                <td>各カテゴリで最低1件以上、タイトル・URL・配信元・公開日時・概要文を取得できる。</td>
               </tr>
               <tr>
                 <td>F-03</td>
-                <td>概要文が定義した文字数上限内に整形され、不要改行や重複空白が除去される。</td>
+                <td>概要文が文字数上限内に整形され、不要改行や重複空白が除去される。</td>
               </tr>
               <tr>
                 <td>F-04/F-05</td>
                 <td>3指標すべてで現在値と前日比（%）が算出され、欠損時は理由がログに残る。</td>
               </tr>
               <tr>
-                <td>F-06</td>
-                <td>レポートに「タイトル」「URL」「配信元」「短い概要」「マーケット概要」が含まれる。</td>
+                <td>F-06/F-07</td>
+                <td>レポートに市況コメントと投資助言ではない旨の注意事項が含まれる。</td>
               </tr>
               <tr>
-                <td>F-07</td>
-                <td>参考コメントに「本コメントは情報提供であり投資助言ではありません」が必ず表示される。</td>
-              </tr>
-              <tr>
-                <td>F-08</td>
-                <td>当日分ファイルが重複せず保存され、再実行時は上書きまたは版管理方針に従う。</td>
-              </tr>
-              <tr>
-                <td>F-09</td>
-                <td>失敗時に処理名・発生時刻・原因メッセージを出力する。</td>
+                <td>F-08/F-09/F-10</td>
+                <td>日付付き保存、失敗ログ、APIキーなしのサンプル生成を確認できる。</td>
               </tr>
             </tbody>
           </table>
         </div>
-        
       </article>
 
-      <article class="slide" id="slide-06">
-        <p class="slide-index">06</p>
-        <h2>非機能要件と未決事項</h2>
+      <article class="slide" id="slide-12">
+        <p class="slide-index">12</p>
+        <h2>公開リポジトリ方針</h2>
         <div class="two-col">
-          <section class="panel">
-            <h3>非機能要件</h3>
+          <section class="panel panel-in">
+            <h3>含める</h3>
             <ul>
-              <li>実行時間: 朝の定時バッチ1回あたり5分以内を目標とする。</li>
-              <li>可観測性: 成功/失敗件数と最終実行時刻をログで追跡できること。</li>
-              <li>保守性: データソースやカテゴリを設定ファイルで変更可能にする。</li>
-              <li>セキュリティ: APIキー等の機密情報は環境変数で管理し、レポートへ出力しない。</li>
-              <li>コンプライアンス: 投資判断コメントは参考情報に限定し、投資助言と誤認される表現を避ける。</li>
+              <li>ソースコード、要件定義書、README</li>
+              <li><code>.env.example</code>、<code>.gitignore</code></li>
+              <li><code>sample_data/</code></li>
+              <li><code>reports/sample-report.md</code></li>
+              <li>テストコード、実行手順</li>
             </ul>
           </section>
-          <section class="panel">
-            <h3>未決事項</h3>
+          <section class="panel panel-out">
+            <h3>含めない</h3>
             <ul>
-              <li>ニュース/価格データの正式ソースと利用規約の確定</li>
-              <li>概要文の文字数上限（例: 80文字 or 120文字）の最終決定</li>
-              <li>投資判断コメントの定型ルール（閾値・表現テンプレート）の最終決定</li>
-              <li>バッチ実行時刻（JST）と再試行回数の最終決定</li>
+              <li><code>.env</code>、APIキー、<code>.DS_Store</code></li>
+              <li>有料記事本文</li>
+              <li>スクレイピング結果の生データ</li>
+              <li>個人利用版の取得先URL一覧</li>
             </ul>
           </section>
         </div>
       </article>
 
-      <article class="slide" id="slide-07">
-        <p class="slide-index">07</p>
-        <h2>成功条件</h2>
-        <section class="panel">
-          <h3>本MVPは、以下を満たした場合に成功とする</h3>
-          <ul>
-            <li>毎朝1回、手動または定時実行でレポートを生成できる</li>
-            <li>国内ニュース、海外ニュース、マーケット情報が1つのMarkdownにまとまる</li>
-            <li>各ニュースにタイトル・URL・配信元・短い概要が含まれる</li>
-            <li>日経平均、S&amp;P500、USD/JPY の現在値と前日比を確認できる</li>
-            <li>参考コメントに「投資助言ではない」注記が表示される</li>
-            <li>取得失敗時に処理が完全停止せず、失敗理由がログに残る</li>
-            <li><code>.env</code> に設定したAPIキーをGitHubへ公開しない</li>
-            <li>生成されたレポートを過去日付ごとに参照できる</li>
-          </ul>
-        </section>
+      <article class="slide" id="slide-13">
+        <p class="slide-index">13</p>
+        <h2>想定ディレクトリ構成</h2>
+        <div class="code-preview">
+          <pre><code>morning-news/
+├── README.md
+├── requirements.txt
+├── .env.example
+├── .gitignore
+├── main.py
+├── src/
+│   ├── news/
+│   ├── market/
+│   ├── report/
+│   ├── config/
+│   └── utils/
+├── sample_data/
+│   ├── news_jp.json
+│   ├── news_global.json
+│   └── market.json
+├── reports/
+│   └── sample-report.md
+├── logs/
+│   └── .gitkeep
+└── tests/</code></pre>
+        </div>
+      </article>
+
+      <article class="slide" id="slide-14">
+        <p class="slide-index">14</p>
+        <h2>技術スタックと未決事項</h2>
+        <div class="two-col">
+          <section class="panel">
+            <h3>技術スタック</h3>
+            <ul class="compact-list">
+              <li>Python 3.x</li>
+              <li>requests / feedparser</li>
+              <li>python-dotenv</li>
+              <li>JSON / Python定数</li>
+              <li>Markdown / logging / pytest</li>
+              <li>サンプルデータ: JSON</li>
+            </ul>
+          </section>
+          <section class="panel">
+            <h3>未決事項</h3>
+            <ul class="compact-list">
+              <li>ニュース/価格データの正式ソースと利用規約の確定</li>
+              <li>概要文の文字数上限の最終決定</li>
+              <li>市況コメントの定型ルールの最終決定</li>
+              <li>バッチ実行時刻と再試行回数の最終決定</li>
+              <li>レポート再実行時の上書き/履歴保持方針の決定</li>
+            </ul>
+          </section>
+        </div>
       </article>
     </main>
 
     <footer class="deck-footer">
-      注: 本ドキュメントは人間向けレビュー用HTML。長期管理する正本は同一フォルダのMarkdownを使用する。
+      注: 本ドキュメントはレビュー用HTML。長期管理する正本は同一フォルダのMarkdownを使用する。
     </footer>
   </body>
 </html>
