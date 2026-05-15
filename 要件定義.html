@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morning News 要件定義</title>
+    <link rel="stylesheet" href="./要件定義.css">
+  </head>
+  <body>
+    <header class="deck-header">
+      <p class="deck-label">Requirement Deck</p>
+      <h1>Morning News 要件定義（MVP）</h1>
+      <ul class="deck-meta">
+        <li>版: v0.3（草案）</li>
+        <li>更新日: 2026-05-15</li>
+        <li>正本: 要件定義.md</li>
+      </ul>
+    </header>
+
+    <main class="deck">
+      <article class="slide cover" id="slide-01">
+        <p class="slide-index">01</p>
+        <h2>目的</h2>
+        <p class="lead">
+          ユーザーが朝の情報収集にかける時間を減らすため、ニュースとマーケット情報を自動収集し、
+          重要情報を要約・分類して毎朝レポートとして保存する。
+        </p>
+        <div class="highlights">
+          <section class="highlight">
+            <h3>対象業務</h3>
+            <p>朝の情報収集</p>
+          </section>
+          <section class="highlight">
+            <h3>提供価値</h3>
+            <p>収集時間の短縮</p>
+          </section>
+          <section class="highlight">
+            <h3>成果物</h3>
+            <p>日次Markdownレポート</p>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide" id="slide-02">
+        <p class="slide-index">02</p>
+        <h2>想定ユーザーと課題</h2>
+        <div class="two-col">
+          <section class="panel">
+            <h3>想定ユーザー</h3>
+            <ul>
+              <li>毎朝、国内外ニュースと市場動向を短時間で把握したい個人ユーザー</li>
+              <li>業務開始前に「前日から当朝までの要点」を確認したいビジネスユーザー</li>
+            </ul>
+          </section>
+          <section class="panel">
+            <h3>解決したい課題</h3>
+            <ol>
+              <li>ニュースと株価の関係を同じレポートで確認できない</li>
+              <li>複数サイト巡回による情報収集時間が長い</li>
+              <li>過去レポートを日付ベースで参照しづらい</li>
+            </ol>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide" id="slide-03">
+        <p class="slide-index">03</p>
+        <h2>スコープ</h2>
+        <div class="two-col">
+          <section class="panel panel-in">
+            <h3>MVP対象</h3>
+            <ul>
+              <li>API/RSSで記事情報を取得（タイトル・URL・配信元・概要文）</li>
+              <li>概要文を整形し、短い概要を生成</li>
+              <li>タイトル・URL・配信元・短い概要をレポート掲載</li>
+              <li>株価・指数・為替の取得と前日比計算</li>
+              <li>参考用の投資判断コメントを定型文で追加（投資助言はしない）</li>
+              <li>日次Markdownレポート生成と保存</li>
+              <li>処理失敗時のログ記録</li>
+            </ul>
+          </section>
+          <section class="panel panel-out">
+            <h3>MVP非対象</h3>
+            <ul>
+              <li>AIによる高度な要約</li>
+              <li>ニュース本文全文の解析</li>
+              <li>ユーザーごとの高度な推薦アルゴリズム</li>
+              <li>自動売買シグナルの生成</li>
+              <li>Web UIでの編集機能</li>
+              <li>モバイル通知連携</li>
+            </ul>
+          </section>
+        </div>
+        <div class="scope-diagram">
+          <h3>スコープ境界図</h3>
+          <div class="scope-diagram-row">
+            <div class="outside-area outside-left">
+              <div class="outside-item">
+                AIによる高度な要約
+              </div>
+            </div>
+            <div class="scope-boundary">
+              <p class="scope-title">Morning News スコープ</p>
+              <ul class="inside-list">
+                <li>API/RSSから記事情報取得</li>
+                <li>概要文の整形（短文化）</li>
+                <li>タイトル/URL/配信元/概要の掲載</li>
+                <li>市況データ＋参考コメント付与</li>
+              </ul>
+            </div>
+            <div class="outside-area outside-right">
+              <div class="outside-item">ニュース本文全文の解析</div>
+              <div class="outside-item">自動売買シグナル</div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="slide" id="slide-04">
+        <p class="slide-index">04</p>
+        <h2>機能要件（MVP）</h2>
+        <div class="table-wrap">
+          <table>
+            <caption>MVP機能一覧</caption>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>優先度</th>
+                <th>機能</th>
+                <th>要件（MUST/SHOULD）</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>F-01</td>
+                <td>MUST</td>
+                <td>国内ニュース取得</td>
+                <td>ニュースAPI/RSSから国内カテゴリ記事を取得し、タイトル・URL・配信元・概要文を保持する。</td>
+              </tr>
+              <tr>
+                <td>F-02</td>
+                <td>MUST</td>
+                <td>海外ニュース取得</td>
+                <td>ニュースAPI/RSSから海外カテゴリ記事を取得し、タイトル・URL・配信元・概要文を保持する。</td>
+              </tr>
+              <tr>
+                <td>F-03</td>
+                <td>MUST</td>
+                <td>概要文整形</td>
+                <td>取得した概要文を整形し、最大文字数をそろえた短い概要を生成する。</td>
+              </tr>
+              <tr>
+                <td>F-04</td>
+                <td>MUST</td>
+                <td>マーケット情報取得</td>
+                <td>日経平均、S&amp;P500、USD/JPY を最低対象として価格を取得する。</td>
+              </tr>
+              <tr>
+                <td>F-05</td>
+                <td>MUST</td>
+                <td>変化率計算</td>
+                <td>前営業日終値を基準として前日比（%）を計算する。</td>
+              </tr>
+              <tr>
+                <td>F-06</td>
+                <td>MUST</td>
+                <td>レポート生成</td>
+                <td>タイトル・URL・配信元・短い概要、主要市況データを含むMarkdownを生成する。</td>
+              </tr>
+              <tr>
+                <td>F-07</td>
+                <td>SHOULD</td>
+                <td>投資判断コメント（参考）</td>
+                <td>定型ルールに基づく参考コメントを追記し、「投資助言ではない」注記を明示する。</td>
+              </tr>
+              <tr>
+                <td>F-08</td>
+                <td>MUST</td>
+                <td>レポート保存</td>
+                <td><code>reports/YYYY-MM-DD.md</code> 形式で保存する。</td>
+              </tr>
+              <tr>
+                <td>F-09</td>
+                <td>SHOULD</td>
+                <td>エラーログ</td>
+                <td>取得/変換/保存の各失敗を日時・機能ID付きで記録する。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="slide" id="slide-05">
+        <p class="slide-index">05</p>
+        <h2>受け入れ条件</h2>
+        <div class="table-wrap">
+          <table>
+            <caption>機能別受け入れ条件</caption>
+            <thead>
+              <tr>
+                <th>対象</th>
+                <th>条件</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>F-01/F-02</td>
+                <td>各カテゴリで最低1件以上の記事について、タイトル・URL・配信元・概要文を取得できる。</td>
+              </tr>
+              <tr>
+                <td>F-03</td>
+                <td>概要文が定義した文字数上限内に整形され、不要改行や重複空白が除去される。</td>
+              </tr>
+              <tr>
+                <td>F-04/F-05</td>
+                <td>3指標すべてで現在値と前日比（%）が算出され、欠損時は理由がログに残る。</td>
+              </tr>
+              <tr>
+                <td>F-06</td>
+                <td>レポートに「タイトル」「URL」「配信元」「短い概要」「マーケット概要」が含まれる。</td>
+              </tr>
+              <tr>
+                <td>F-07</td>
+                <td>参考コメントに「本コメントは情報提供であり投資助言ではありません」が必ず表示される。</td>
+              </tr>
+              <tr>
+                <td>F-08</td>
+                <td>当日分ファイルが重複せず保存され、再実行時は上書きまたは版管理方針に従う。</td>
+              </tr>
+              <tr>
+                <td>F-09</td>
+                <td>失敗時に処理名・発生時刻・原因メッセージを出力する。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+      </article>
+
+      <article class="slide" id="slide-06">
+        <p class="slide-index">06</p>
+        <h2>非機能要件と未決事項</h2>
+        <div class="two-col">
+          <section class="panel">
+            <h3>非機能要件</h3>
+            <ul>
+              <li>実行時間: 朝の定時バッチ1回あたり5分以内を目標とする。</li>
+              <li>可観測性: 成功/失敗件数と最終実行時刻をログで追跡できること。</li>
+              <li>保守性: データソースやカテゴリを設定ファイルで変更可能にする。</li>
+              <li>セキュリティ: APIキー等の機密情報は環境変数で管理し、レポートへ出力しない。</li>
+              <li>コンプライアンス: 投資判断コメントは参考情報に限定し、投資助言と誤認される表現を避ける。</li>
+            </ul>
+          </section>
+          <section class="panel">
+            <h3>未決事項</h3>
+            <ul>
+              <li>ニュース/価格データの正式ソースと利用規約の確定</li>
+              <li>概要文の文字数上限（例: 80文字 or 120文字）の最終決定</li>
+              <li>投資判断コメントの定型ルール（閾値・表現テンプレート）の最終決定</li>
+              <li>バッチ実行時刻（JST）と再試行回数の最終決定</li>
+            </ul>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide" id="slide-07">
+        <p class="slide-index">07</p>
+        <h2>成功条件</h2>
+        <section class="panel">
+          <h3>本MVPは、以下を満たした場合に成功とする</h3>
+          <ul>
+            <li>毎朝1回、手動または定時実行でレポートを生成できる</li>
+            <li>国内ニュース、海外ニュース、マーケット情報が1つのMarkdownにまとまる</li>
+            <li>各ニュースにタイトル・URL・配信元・短い概要が含まれる</li>
+            <li>日経平均、S&amp;P500、USD/JPY の現在値と前日比を確認できる</li>
+            <li>参考コメントに「投資助言ではない」注記が表示される</li>
+            <li>取得失敗時に処理が完全停止せず、失敗理由がログに残る</li>
+            <li><code>.env</code> に設定したAPIキーをGitHubへ公開しない</li>
+            <li>生成されたレポートを過去日付ごとに参照できる</li>
+          </ul>
+        </section>
+      </article>
+    </main>
+
+    <footer class="deck-footer">
+      注: 本ドキュメントは人間向けレビュー用HTML。長期管理する正本は同一フォルダのMarkdownを使用する。
+    </footer>
+  </body>
+</html>
