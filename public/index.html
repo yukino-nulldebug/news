@@ -3,10 +3,37 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="0; url=./pages/requirements.html">
     <title>Morning News</title>
+    <link rel="stylesheet" href="./assets/common.css">
   </head>
   <body>
-    <p><a href="./pages/requirements.html">Morning News 要件定義を開く</a></p>
+    <header class="deck-header">
+      <p class="deck-label">Morning News Portfolio Docs</p>
+      <h1>Morning News</h1>
+      <ul class="deck-meta">
+        <li>要件定義・基本設計レビュー用HTML</li>
+        <li>更新日: 2026-05-18</li>
+      </ul>
+    </header>
+
+    <main class="deck">
+      <article class="slide cover">
+        <p class="slide-index">Docs</p>
+        <h2>ドキュメント一覧</h2>
+        <p class="lead">
+          Morning News の要件定義と基本設計を、レビューしやすいHTMLとして確認できます。
+        </p>
+        <div class="doc-list">
+          <a class="panel doc-link" href="./pages/requirements.html">
+            <h3>要件定義</h3>
+            <p>目的、MVPスコープ、機能要件、受け入れ条件を確認する。</p>
+          </a>
+          <a class="panel doc-link" href="./pages/basic-design.html">
+            <h3>基本設計</h3>
+            <p>構成、処理フロー、データ設計、ログ、実装フェーズを確認する。</p>
+          </a>
+        </div>
+      </article>
+    </main>
   </body>
 </html>
