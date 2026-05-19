@@ -32,13 +32,14 @@
       <h1>Morning News 基本設計</h1>
       <ul class="deck-meta">
         <li>版: draft</li>
-        <li>更新日: 2026-05-18</li>
+        <li>更新日: 2026-05-19</li>
         <li>正本: docs/basic-design/基本設計.md</li>
         <li>関連: docs/requirements/要件定義.md</li>
       </ul>
       <nav class="deck-nav" aria-label="ドキュメント内ナビゲーション">
         <a href="../index.html">ドキュメント一覧へ戻る</a>
         <a href="./requirements.html">要件定義を見る</a>
+        <a href="./detail-design-phase1.html">詳細設計 Phase 1を見る</a>
       </nav>
     </header>
 
@@ -235,7 +236,7 @@
         <section class="panel">
           <h3>異常時の基本方針</h3>
           <ul class="compact-list">
-            <li>ニュース取得失敗時は、該当カテゴリだけ欠損扱いにして処理を継続する。</li>
+            <li>ニュース取得失敗時は、該当地域区分だけ欠損扱いにして処理を継続する。</li>
             <li>マーケット情報の一部欠損は <code>N/A</code> として表示し、理由をログに残す。</li>
             <li>レポート生成または保存に失敗した場合は、異常終了として扱う。</li>
           </ul>
@@ -303,7 +304,8 @@
           <section class="panel">
             <h3>ニュース正規化</h3>
             <ul class="compact-list">
-              <li><code>category</code>: <code>domestic</code> / <code>global</code></li>
+              <li><code>region</code>: <code>domestic</code> / <code>global</code></li>
+              <li><code>category</code>: <code>economy</code>, <code>market</code>, <code>tech</code> など</li>
               <li><code>title</code>, <code>url</code>, <code>source</code> は必須</li>
               <li><code>published_at</code> はJST表示に変換</li>
               <li><code>short_summary</code> は120文字以内に整形</li>
@@ -335,6 +337,7 @@
                 </tr>
               </thead>
               <tbody>
+                <tr><td><code>region</code></td><td>必須</td></tr>
                 <tr><td><code>category</code></td><td>必須</td></tr>
                 <tr><td><code>title</code></td><td>必須</td></tr>
                 <tr><td><code>url</code></td><td>必須</td></tr>
@@ -358,9 +361,9 @@
                 <tr><td><code>symbol</code></td><td>必須</td></tr>
                 <tr><td><code>name</code></td><td>必須</td></tr>
                 <tr><td><code>current_value</code></td><td>必須</td></tr>
-                <tr><td><code>previous_close</code></td><td>任意</td></tr>
-                <tr><td><code>change</code></td><td>任意</td></tr>
-                <tr><td><code>change_rate</code></td><td>任意</td></tr>
+                <tr><td><code>previous_close</code></td><td>任意 / Phase 1 sampleでは必須</td></tr>
+                <tr><td><code>change</code></td><td>計算後必須</td></tr>
+                <tr><td><code>change_rate</code></td><td>計算後必須</td></tr>
                 <tr><td><code>fetched_at</code></td><td>必須</td></tr>
               </tbody>
             </table>
@@ -381,11 +384,12 @@
               <pre><code>{
   "items": [
     {
-      "category": "domestic",
+      "region": "domestic",
+      "category": "economy",
       "title": "国内ニュースのサンプルタイトル",
       "url": "https://example.com/jp-news-1",
       "source": "Sample JP News",
-      "published_at": "2026-05-16T07:00:00+09:00",
+      "published_at": "2026-05-19T07:00:00+09:00",
       "summary": "国内経済に関するニュース概要のサンプルです。"
     }
   ]
@@ -398,12 +402,13 @@
               <pre><code>{
   "items": [
     {
-      "category": "global",
-      "title": "海外ニュースのサンプルタイトル",
+      "region": "global",
+      "category": "market",
+      "title": "Global market sample news title",
       "url": "https://example.com/global-news-1",
       "source": "Sample Global News",
-      "published_at": "2026-05-16T07:00:00+09:00",
-      "summary": "海外経済に関するニュース概要のサンプルです。"
+      "published_at": "2026-05-19T07:00:00+09:00",
+      "summary": "This is a sample summary for global market news."
     }
   ]
 }</code></pre>
@@ -420,7 +425,7 @@
       "current_value": 38500.25,
       "previous_close": 38200.00,
       "unit": "points",
-      "fetched_at": "2026-05-16T07:00:00+09:00"
+      "fetched_at": "2026-05-19T07:00:00+09:00"
     }
   ]
 }</code></pre>
@@ -630,7 +635,7 @@ REQUEST_RETRY_COUNT=1</code></pre>
               <tr>
                 <td>F-01/F-02</td>
                 <td>国内・海外ニュースを <code>NewsItem</code> に正規化する。</td>
-                <td>各カテゴリで1件以上取得できる。</td>
+                <td>国内・海外の各地域区分で1件以上取得できる。</td>
               </tr>
               <tr>
                 <td>F-03</td>
@@ -683,7 +688,7 @@ REQUEST_RETRY_COUNT=1</code></pre>
     </main>
 
     <footer class="deck-footer">
-      注: 本ドキュメントはレビュー用HTML。正本はMarkdownを使用する。更新日: 2026-05-18 / 出典: 基本設計.md
+      注: 本ドキュメントはレビュー用HTML。正本はMarkdownを使用する。更新日: 2026-05-19 / 出典: 基本設計.md
     </footer>
   </body>
 </html>

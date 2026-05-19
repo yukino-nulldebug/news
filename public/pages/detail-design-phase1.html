@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morning News 詳細設計 Phase 1</title>
+    <link rel="stylesheet" href="../assets/detail-design.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        if (!window.mermaid) return;
+        window.mermaid.initialize({
+          startOnLoad: true,
+          theme: "base",
+          themeVariables: {
+            background: "#ffffff",
+            primaryColor: "#f2f2f3",
+            primaryTextColor: "#1a1a1c",
+            primaryBorderColor: "#8f9096",
+            lineColor: "#8f9096",
+            secondaryColor: "#ffffff",
+            tertiaryColor: "#f7f7f8",
+            fontFamily: "Noto Sans JP, Hiragino Sans, Yu Gothic, system-ui, sans-serif"
+          }
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <header class="deck-header">
+      <p class="deck-label">Portfolio Detail Design Deck</p>
+      <h1>Morning News 詳細設計 Phase 1</h1>
+      <ul class="deck-meta">
+        <li>版: draft</li>
+        <li>更新日: 2026-05-19</li>
+        <li>正本: docs/detail-design/詳細設計Phase 1.md</li>
+        <li>関連: 要件定義 / 基本設計</li>
+      </ul>
+      <nav class="deck-nav" aria-label="ドキュメント内ナビゲーション">
+        <a href="../index.html">ドキュメント一覧へ戻る</a>
+        <a href="./requirements.html">要件定義を見る</a>
+        <a href="./basic-design.html">基本設計を見る</a>
+      </nav>
+    </header>
+
+    <main class="deck">
+      <article class="slide cover detail-cover" id="slide-01">
+        <p class="slide-index">01</p>
+        <h2>Phase 1 のゴール</h2>
+        <p class="lead">
+          Phase 1 は、外部APIを使わずに <code>sample_data</code> の固定JSONから日次Markdownレポートを生成し、
+          <code>reports/YYYY-MM-DD.md</code> として保存できる状態を作る。
+        </p>
+        <div class="summary-grid">
+          <section class="summary-card">
+            <h3>入力</h3>
+            <p><code>sample_data</code></p>
+          </section>
+          <section class="summary-card">
+            <h3>処理</h3>
+            <p>整形・計算</p>
+          </section>
+          <section class="summary-card">
+            <h3>出力</h3>
+            <p>Markdown</p>
+          </section>
+          <section class="summary-card">
+            <h3>完了条件</h3>
+            <p>APIキー不要</p>
+          </section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart LR
+    user["ユーザー"] --> main["python main.py"]
+    main --> json["sample_data/*.json"]
+    json --> normalize["ニュース整形 / 市況計算"]
+    normalize --> markdown["Markdown生成"]
+    markdown --> report["reports/YYYY-MM-DD.md"]
+    main --> log["logs/app.log"]</pre>
+        </div>
+      </article>
+
+      <article class="slide" id="slide-02">
+        <p class="slide-index">02</p>
+        <h2>Phase 1 スコープ境界</h2>
+        <div class="phase-boundary">
+          <section class="panel panel-in">
+            <h3>Phase 1 で実装する</h3>
+            <ul class="boundary-list">
+              <li><code>news_jp.json</code> と <code>news_global.json</code> の読み込み</li>
+              <li><code>market.json</code> の読み込み</li>
+              <li>概要文の空白整理と文字数制限</li>
+              <li>前日比と変化率の計算</li>
+              <li>Markdownレポートの生成と保存</li>
+              <li>起動、読み込み、保存結果の基本ログ</li>
+            </ul>
+          </section>
+          <section class="panel panel-out">
+            <h3>Phase 1 では実装しない</h3>
+            <ul class="boundary-list">
+              <li>RSS / News API からの取得</li>
+              <li>株価APIからの実データ取得</li>
+              <li>AIによる高度な要約</li>
+              <li>メール、LINE、モバイル通知</li>
+              <li>Web UI</li>
+              <li>自動売買、売買推奨、投資助言</li>
+            </ul>
+          </section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart TB
+    subgraph phase1["Phase 1"]
+      sample["sample_data JSON"]
+      clean["概要文整形"]
+      calc["変化率計算"]
+      report["Markdown保存"]
+    end
+    subgraph later["次フェーズ以降"]
+      api["RSS / API取得"]
+      env[".env / APIキー"]
+      notify["通知"]
+      tests["pytest強化"]
+    end
+    sample --> clean --> report
+    sample --> calc --> report</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-03">
+        <p class="slide-index">03</p>
+        <h2>ファイル構成と責務</h2>
+        <div class="module-lanes">
+          <section class="module-lane">
+            <h3>Entry</h3>
+            <div class="module-stack">
+              <div class="module-node"><strong><code>main.py</code></strong>全体制御、例外処理、終了コード</div>
+            </div>
+          </section>
+          <section class="module-lane">
+            <h3>Input</h3>
+            <div class="module-stack">
+              <div class="module-node"><strong><code>config/settings.py</code></strong>パス、件数、文字数上限</div>
+              <div class="module-node"><strong><code>news/fetcher.py</code></strong>ニュースJSON読み込み</div>
+              <div class="module-node"><strong><code>market/fetcher.py</code></strong>市況JSON読み込み</div>
+            </div>
+          </section>
+          <section class="module-lane">
+            <h3>Transform</h3>
+            <div class="module-stack">
+              <div class="module-node"><strong><code>news/formatter.py</code></strong>概要文整形</div>
+              <div class="module-node"><strong><code>market/calculator.py</code></strong>前日比、変化率計算</div>
+            </div>
+          </section>
+          <section class="module-lane">
+            <h3>Output</h3>
+            <div class="module-stack">
+              <div class="module-node"><strong><code>report/generator.py</code></strong>Markdown本文生成</div>
+              <div class="module-node"><strong><code>report/writer.py</code></strong>日付ファイル保存</div>
+              <div class="module-node"><strong><code>utils/logger.py</code></strong>標準出力とログファイル</div>
+            </div>
+          </section>
+        </div>
+        <div class="code-preview">
+          <pre><code>morning-news/
+├── main.py
+├── src/
+│   ├── config/settings.py
+│   ├── news/fetcher.py
+│   ├── news/formatter.py
+│   ├── market/fetcher.py
+│   ├── market/calculator.py
+│   ├── report/generator.py
+│   ├── report/writer.py
+│   └── utils/logger.py
+├── sample_data/
+│   ├── news_jp.json
+│   ├── news_global.json
+│   └── market.json
+├── reports/
+└── logs/</code></pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-04">
+        <p class="slide-index">04</p>
+        <h2>モジュール依存関係</h2>
+        <p class="section-note">
+          依存は <code>main.py</code> から各モジュールへ向ける。下位モジュールから <code>main.py</code> は呼び出さない。
+        </p>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart TD
+    main["main.py"] --> settings["config/settings.py"]
+    main --> logger["utils/logger.py"]
+    main --> newsFetcher["news/fetcher.py"]
+    main --> newsFormatter["news/formatter.py"]
+    main --> marketFetcher["market/fetcher.py"]
+    main --> marketCalculator["market/calculator.py"]
+    main --> reportGenerator["report/generator.py"]
+    main --> reportWriter["report/writer.py"]
+
+    settings --> sampleData["sample_data paths"]
+    newsFetcher --> newsJson["news_jp.json / news_global.json"]
+    marketFetcher --> marketJson["market.json"]
+    newsFormatter --> reportGenerator
+    marketCalculator --> reportGenerator
+    reportGenerator --> reportWriter
+    reportWriter --> reports["reports/YYYY-MM-DD.md"]
+    logger --> logs["logs/app.log"]</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-05">
+        <p class="slide-index">05</p>
+        <h2>処理順序</h2>
+        <div class="mermaid-panel">
+          <pre class="mermaid">sequenceDiagram
+    participant U as User
+    participant M as main.py
+    participant S as settings.py
+    participant L as logger.py
+    participant NF as news/fetcher.py
+    participant F as news/formatter.py
+    participant MF as market/fetcher.py
+    participant C as market/calculator.py
+    participant G as report/generator.py
+    participant W as report/writer.py
+
+    U->>M: python main.py
+    M->>S: load_settings()
+    M->>L: setup_logger()
+    M->>NF: fetch_sample_news(settings)
+    NF-->>M: domestic / global news
+    M->>F: format_news_items()
+    F-->>M: short_summary added
+    M->>MF: fetch_sample_markets(settings)
+    MF-->>M: markets
+    M->>C: calculate_market_changes()
+    C-->>M: change / change_rate added
+    M->>G: generate_report(report_data)
+    G-->>M: markdown
+    M->>W: write_report(markdown, path)
+    W-->>M: reports/YYYY-MM-DD.md</pre>
+        </div>
+        <div class="pipeline">
+          <section class="pipeline-step">
+            <span class="step-label">Step 1</span>
+            <strong>設定</strong>
+            <p>固定値とパスを読み込む。</p>
+          </section>
+          <section class="pipeline-step">
+            <span class="step-label">Step 2</span>
+            <strong>取得</strong>
+            <p>3つのJSONを読み込む。</p>
+          </section>
+          <section class="pipeline-step">
+            <span class="step-label">Step 3</span>
+            <strong>整形</strong>
+            <p>概要文を短く整える。</p>
+          </section>
+          <section class="pipeline-step">
+            <span class="step-label">Step 4</span>
+            <strong>計算</strong>
+            <p>前日比と変化率を算出する。</p>
+          </section>
+          <section class="pipeline-step">
+            <span class="step-label">Step 5</span>
+            <strong>生成</strong>
+            <p>Markdown本文を作る。</p>
+          </section>
+          <section class="pipeline-step">
+            <span class="step-label">Step 6</span>
+            <strong>保存</strong>
+            <p>日付ファイルへ保存する。</p>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-06">
+        <p class="slide-index">06</p>
+        <h2>内部データ構造</h2>
+        <div class="data-structure-grid">
+          <section class="data-card">
+            <h3><code>NewsItem</code></h3>
+            <ul class="field-list">
+              <li><code>region</code><span><code>domestic</code> または <code>global</code></span></li>
+              <li><code>category</code><span><code>economy</code>, <code>market</code>, <code>tech</code> など</span></li>
+              <li><code>title</code><span>記事タイトル</span></li>
+              <li><code>url</code><span>記事URL</span></li>
+              <li><code>source</code><span>配信元</span></li>
+              <li><code>published_at</code><span>ISO 8601形式</span></li>
+              <li><code>short_summary</code><span>整形後の概要文</span></li>
+            </ul>
+          </section>
+          <section class="data-card">
+            <h3><code>MarketItem</code></h3>
+            <ul class="field-list">
+              <li><code>symbol</code><span>指標コード</span></li>
+              <li><code>name</code><span>表示名</span></li>
+              <li><code>current_value</code><span>現在値</span></li>
+              <li><code>previous_close</code><span>前営業日終値</span></li>
+              <li><code>change</code><span>計算後必須</span></li>
+              <li><code>change_rate</code><span>計算後必須</span></li>
+              <li><code>fetched_at</code><span>取得日時</span></li>
+            </ul>
+          </section>
+          <section class="data-card">
+            <h3><code>ReportData</code></h3>
+            <ul class="field-list">
+              <li><code>generated_at</code><span>レポート生成日時</span></li>
+              <li><code>mode</code><span><code>sample</code> 固定</span></li>
+              <li><code>news_domestic</code><span>国内ニュース一覧</span></li>
+              <li><code>news_global</code><span>海外ニュース一覧</span></li>
+              <li><code>markets</code><span>市況データ一覧</span></li>
+              <li><code>warnings</code><span>継続可能な警告</span></li>
+            </ul>
+          </section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart LR
+    news["list[NewsItem]"] --> reportData["ReportData"]
+    market["list[MarketItem]"] --> reportData
+    warnings["list[str] warnings"] --> reportData
+    reportData --> markdown["Markdown string"]
+    markdown --> file["reports/YYYY-MM-DD.md"]</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-07">
+        <p class="slide-index">07</p>
+        <h2><code>sample_data</code> JSON仕様</h2>
+        <p class="section-note">
+          ニュースは地域区分を <code>region</code>、内容分類を <code>category</code> に分ける。サンプルデータは架空データとして扱う。
+        </p>
+        <div class="json-grid">
+          <section class="panel">
+            <h3><code>news_jp.json</code></h3>
+            <div class="code-preview">
+              <pre><code>{
+  "items": [
+    {
+      "region": "domestic",
+      "category": "economy",
+      "title": "国内ニュースのサンプルタイトル",
+      "url": "https://example.com/jp-news-1",
+      "source": "Sample JP News",
+      "published_at": "2026-05-19T07:00:00+09:00",
+      "summary": "国内経済に関するニュース概要のサンプルです。"
+    }
+  ]
+}</code></pre>
+            </div>
+          </section>
+          <section class="panel">
+            <h3><code>news_global.json</code></h3>
+            <div class="code-preview">
+              <pre><code>{
+  "items": [
+    {
+      "region": "global",
+      "category": "market",
+      "title": "Global market sample news title",
+      "url": "https://example.com/global-news-1",
+      "source": "Sample Global News",
+      "published_at": "2026-05-19T07:00:00+09:00",
+      "summary": "This is a sample summary for global market news."
+    }
+  ]
+}</code></pre>
+            </div>
+          </section>
+          <section class="panel">
+            <h3><code>market.json</code></h3>
+            <div class="code-preview">
+              <pre><code>{
+  "items": [
+    {
+      "symbol": "NIKKEI225",
+      "name": "日経平均",
+      "current_value": 38500.25,
+      "previous_close": 38200.00,
+      "unit": "points",
+      "fetched_at": "2026-05-19T07:00:00+09:00"
+    }
+  ]
+}</code></pre>
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-08">
+        <p class="slide-index">08</p>
+        <h2>関数設計</h2>
+        <div class="function-map">
+          <section class="function-card">
+            <h3><code>main.py</code></h3>
+            <ul>
+              <li><code>main()</code>: 全体処理を実行し、終了コードを返す。</li>
+              <li><code>build_report_data(settings)</code>: 取得、整形、計算結果を <code>ReportData</code> にまとめる。</li>
+            </ul>
+          </section>
+          <section class="function-card">
+            <h3><code>config/settings.py</code></h3>
+            <ul>
+              <li><code>load_settings()</code>: Phase 1 の設定値を返す。</li>
+              <li><code>NEWS_LIMIT</code>: 国内/海外ニュースの最大件数。初期値は <code>5</code>。</li>
+              <li><code>SUMMARY_MAX_LENGTH</code>: 概要文の最大文字数。初期値は <code>120</code>。</li>
+            </ul>
+          </section>
+          <section class="function-card">
+            <h3><code>news/</code></h3>
+            <ul>
+              <li><code>load_news_items(file_path)</code>: JSONを読み込み、ニュース一覧を返す。</li>
+              <li><code>fetch_sample_news(settings)</code>: 国内/海外ニュースを返す。</li>
+              <li><code>format_summary(summary, max_length)</code>: 空白整理と文字数制限を行う。</li>
+              <li><code>format_news_items(items, max_length)</code>: <code>short_summary</code> を追加する。</li>
+            </ul>
+          </section>
+          <section class="function-card">
+            <h3><code>market/</code></h3>
+            <ul>
+              <li><code>load_market_items(file_path)</code>: <code>market.json</code> を読み込む。</li>
+              <li><code>fetch_sample_markets(settings)</code>: Phase 1 用の市況データを返す。</li>
+              <li><code>calculate_change(current_value, previous_close)</code>: 前日比と変化率を計算する。</li>
+              <li><code>calculate_market_changes(items)</code>: 各項目に計算結果を追加する。</li>
+            </ul>
+          </section>
+          <section class="function-card">
+            <h3><code>report/</code></h3>
+            <ul>
+              <li><code>generate_report(report_data)</code>: Markdown全文を生成する。</li>
+              <li><code>generate_news_section(title, items)</code>: ニュースセクションを生成する。</li>
+              <li><code>generate_market_section(items)</code>: 市況表を生成する。</li>
+              <li><code>generate_market_comments(items)</code>: 市況コメントを生成する。</li>
+            </ul>
+          </section>
+          <section class="function-card">
+            <h3><code>writer / logger</code></h3>
+            <ul>
+              <li><code>build_report_path(report_dir, target_date)</code>: 保存先を作る。</li>
+              <li><code>write_report(markdown, report_path)</code>: UTF-8で保存する。</li>
+              <li><code>setup_logger(log_dir)</code>: 標準出力と <code>logs/app.log</code> に出力する。</li>
+            </ul>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-09">
+        <p class="slide-index">09</p>
+        <h2>計算・整形ルール</h2>
+        <div class="two-col">
+          <section class="panel">
+            <h3>概要文整形</h3>
+            <ul class="compact-list">
+              <li><code>\n</code>, <code>\r</code>, <code>\t</code> は半角スペースに置換する。</li>
+              <li>連続する空白は1つにまとめる。</li>
+              <li>前後の空白は削除する。</li>
+              <li><code>max_length</code> を超える場合は末尾を <code>...</code> にする。</li>
+              <li>空の場合は <code>概要はありません。</code> とする。</li>
+            </ul>
+          </section>
+          <section class="panel">
+            <h3>変化率計算</h3>
+            <div class="code-preview">
+              <pre><code>change = current_value - previous_close
+change_rate = change / previous_close * 100</code></pre>
+            </div>
+            <ul class="compact-list">
+              <li><code>change</code> と <code>change_rate</code> は小数第2位まで丸める。</li>
+              <li><code>previous_close</code> が <code>0</code> の場合は <code>None</code> とする。</li>
+            </ul>
+          </section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart LR
+    rawSummary["summary"] --> trim["改行 / タブ置換"]
+    trim --> squash["重複空白除去"]
+    squash --> limit["120文字以内"]
+    limit --> short["short_summary"]
+
+    current["current_value"] --> change["change"]
+    previous["previous_close"] --> change
+    change --> rate["change_rate"]</pre>
+        </div>
+      </article>
+
+      <article class="slide" id="slide-10">
+        <p class="slide-index">10</p>
+        <h2>Markdown生成仕様</h2>
+        <div class="two-col">
+          <section class="panel">
+            <h3>必須セクション</h3>
+            <ol class="compact-list">
+              <li>今日の注目ポイント</li>
+              <li>国内ニュース</li>
+              <li>海外ニュース</li>
+              <li>マーケット情報</li>
+              <li>市況コメント</li>
+              <li>注意事項</li>
+            </ol>
+          </section>
+          <div class="code-preview">
+            <pre><code># Morning News Report
+作成日時: YYYY-MM-DD HH:mm JST
+実行モード: sample
+
+## 1. 今日の注目ポイント
+## 2. 国内ニュース
+## 3. 海外ニュース
+## 4. マーケット情報
+## 5. 市況コメント
+## 6. 注意事項
+本レポートは情報提供を目的としており、投資助言ではありません。</code></pre>
+          </div>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-11">
+        <p class="slide-index">11</p>
+        <h2>エラー処理</h2>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart TD
+    start["処理中にエラー"] --> canContinue{"継続できるか"}
+    canContinue -->|Yes| warning["WARNINGログ"]
+    warning --> fallback["代替値 / N/A / 空概要"]
+    fallback --> continue["処理継続"]
+    canContinue -->|No| error["ERRORログ"]
+    error --> stop["終了コード1"]
+
+    missingJson["JSONなし"] --> error
+    invalidJson["JSON形式不正"] --> error
+    missingRequired["必須項目欠損"] --> error
+    emptySummary["summary空"] --> warning
+    zeroPrevious["previous_close = 0"] --> warning</pre>
+        </div>
+        <div class="error-grid">
+          <section class="error-card">
+            <strong>処理停止</strong>
+            <ul class="compact-list">
+              <li>JSONファイルが存在しない</li>
+              <li>JSON形式が不正</li>
+              <li><code>items</code> が存在しない</li>
+              <li>必須項目が欠損している</li>
+            </ul>
+          </section>
+          <section class="error-card">
+            <strong>処理継続</strong>
+            <ul class="compact-list">
+              <li><code>summary</code> が空</li>
+              <li><code>previous_close</code> が <code>0</code></li>
+              <li><code>logs/app.log</code> に書き込めない</li>
+            </ul>
+          </section>
+          <section class="error-card">
+            <strong>終了コード</strong>
+            <table class="mini-table">
+              <tbody>
+                <tr><td><code>0</code></td><td>正常終了</td></tr>
+                <tr><td><code>1</code></td><td>生成または保存失敗</td></tr>
+              </tbody>
+            </table>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-12">
+        <p class="slide-index">12</p>
+        <h2>テスト観点と受け入れ条件</h2>
+        <div class="test-grid">
+          <section class="panel">
+            <h3>単体テスト</h3>
+            <ul class="compact-list">
+              <li><code>format_summary()</code>: 空白整理、文字数制限、空概要</li>
+              <li><code>calculate_change()</code>: 正常値、<code>previous_close=0</code></li>
+              <li><code>generate_market_section()</code>: Markdown表生成</li>
+              <li><code>build_report_path()</code>: 日付付き保存先</li>
+            </ul>
+          </section>
+          <section class="panel">
+            <h3>結合・異常系テスト</h3>
+            <ul class="compact-list">
+              <li><code>python main.py</code> が終了コード <code>0</code> で終わる。</li>
+              <li><code>reports/YYYY-MM-DD.md</code> が作成される。</li>
+              <li>JSON欠損、不正JSON、必須項目欠損で終了コード <code>1</code> になる。</li>
+              <li>再実行時に同一日付ファイルを上書きできる。</li>
+            </ul>
+          </section>
+        </div>
+        <div class="acceptance-strip">
+          <div class="acceptance-item"><strong>APIキー不要</strong><code>sample</code> のみで実行</div>
+          <div class="acceptance-item"><strong>入口明確</strong><code>python main.py</code></div>
+          <div class="acceptance-item"><strong>保存</strong><code>reports/YYYY-MM-DD.md</code></div>
+          <div class="acceptance-item"><strong>構成</strong>6つの主要セクション</div>
+          <div class="acceptance-item"><strong>注意事項</strong>投資助言ではない旨</div>
+          <div class="acceptance-item"><strong>ログ</strong>失敗原因を記録</div>
+        </div>
+      </article>
+
+      <article class="slide" id="slide-13">
+        <p class="slide-index">13</p>
+        <h2>次フェーズ</h2>
+        <div class="next-phase-map">
+          <section class="next-phase-card">
+            <span class="phase-label">Phase 2</span>
+            <strong>ログ・例外</strong>
+            <p>ログ出力の詳細化、例外クラス整理、失敗件数の集計。</p>
+          </section>
+          <section class="next-phase-card">
+            <span class="phase-label">Phase 3</span>
+            <strong>テスト強化</strong>
+            <p>概要文整形と変化率計算の境界値テストを追加。</p>
+          </section>
+          <section class="next-phase-card">
+            <span class="phase-label">Phase 4</span>
+            <strong>RSS/API取得</strong>
+            <p>ニュース取得、マーケットAPI取得、<code>.env</code> 読み込み。</p>
+          </section>
+          <section class="next-phase-card">
+            <span class="phase-label">Phase 5</span>
+            <strong>pytest</strong>
+            <p>単体テストと結合テストを整備し、回帰を防ぐ。</p>
+          </section>
+          <section class="next-phase-card">
+            <span class="phase-label">Phase 6</span>
+            <strong>公開整備</strong>
+            <p>README、サンプルレポート、GitHub公開用チェック。</p>
+          </section>
+        </div>
+      </article>
+    </main>
+
+    <footer class="deck-footer">
+      注: 本ドキュメントはレビュー用HTML。正本はMarkdownを使用する。更新日: 2026-05-19 / 出典: 詳細設計Phase 1.md
+    </footer>
+  </body>
+</html>
