@@ -1,0 +1,38 @@
+{
+  "metadata": {
+    "data_type": "sample",
+    "created_for": "portfolio demo",
+    "source_policy": "fictional sample data, not copied from real news articles",
+    "language": "en",
+    "region": "global"
+  },
+  "items": [
+    {
+      "region": "global",
+      "category": "market",
+      "title": "US technology stocks move higher as AI demand remains in focus",
+      "url": "https://example.com/global-news-001",
+      "source": "Sample Global News",
+      "published_at": "2026-05-19T07:00:00+09:00",
+      "summary": "Major technology stocks gained attention as investors continued to focus on demand for AI infrastructure and semiconductor products."
+    },
+    {
+      "region": "global",
+      "category": "fx",
+      "title": "Currency markets watch interest rate expectations and dollar movement",
+      "url": "https://example.com/global-news-002",
+      "source": "Sample FX News",
+      "published_at": "2026-05-19T07:15:00+09:00",
+      "summary": "Foreign exchange markets remained focused on interest rate expectations, with USD/JPY movements influencing market sentiment."
+    },
+    {
+      "region": "global",
+      "category": "economy",
+      "title": "Global markets react to inflation data and central bank comments",
+      "url": "https://example.com/global-news-003",
+      "source": "Sample Economy News",
+      "published_at": "2026-05-19T07:25:00+09:00",
+      "summary": "Investors monitored inflation data and central bank comments to assess the outlook for rates and global equity markets."
+    }
+  ]
+}

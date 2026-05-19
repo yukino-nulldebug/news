@@ -1,0 +1,34 @@
+{
+  "metadata": {
+    "data_type": "sample",
+    "created_for": "portfolio demo",
+    "source_policy": "fictional market data for local demo",
+    "fetched_at": "2026-05-19T07:00:00+09:00"
+  },
+  "items": [
+    {
+      "symbol": "NIKKEI225",
+      "name": "日経平均",
+      "current_value": 38500.25,
+      "previous_close": 38200.0,
+      "unit": "points",
+      "fetched_at": "2026-05-19T07:00:00+09:00"
+    },
+    {
+      "symbol": "SP500",
+      "name": "S&P500",
+      "current_value": 5250.1,
+      "previous_close": 5200.0,
+      "unit": "points",
+      "fetched_at": "2026-05-19T07:00:00+09:00"
+    },
+    {
+      "symbol": "USDJPY",
+      "name": "USD/JPY",
+      "current_value": 155.2,
+      "previous_close": 154.8,
+      "unit": "yen",
+      "fetched_at": "2026-05-19T07:00:00+09:00"
+    }
+  ]
+}

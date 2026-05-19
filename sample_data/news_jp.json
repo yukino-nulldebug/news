@@ -1,0 +1,38 @@
+{
+  "metadata": {
+    "data_type": "sample",
+    "created_for": "portfolio demo",
+    "source_policy": "fictional sample data, not copied from real news articles",
+    "language": "ja",
+    "region": "domestic"
+  },
+  "items": [
+    {
+      "region": "domestic",
+      "category": "economy",
+      "title": "国内企業の決算発表を受け、市場に注目が集まる",
+      "url": "https://example.com/jp-news-001",
+      "source": "Sample JP News",
+      "published_at": "2026-05-19T07:00:00+09:00",
+      "summary": "国内主要企業の決算発表を受け、投資家の関心が業績見通しや為替影響に向いている。"
+    },
+    {
+      "region": "domestic",
+      "category": "market",
+      "title": "日経平均は前営業日の流れを受けて方向感を探る展開",
+      "url": "https://example.com/jp-news-002",
+      "source": "Sample Market JP",
+      "published_at": "2026-05-19T07:10:00+09:00",
+      "summary": "前日の米国市場や為替動向を受け、日本市場では輸出関連株や半導体関連株の動きが注目されている。"
+    },
+    {
+      "region": "domestic",
+      "category": "tech",
+      "title": "AI関連サービスの導入拡大で国内IT企業に関心",
+      "url": "https://example.com/jp-news-003",
+      "source": "Sample Tech JP",
+      "published_at": "2026-05-19T07:20:00+09:00",
+      "summary": "企業の業務効率化需要を背景に、AI関連サービスを提供する国内IT企業への関心が高まっている。"
+    }
+  ]
+}
