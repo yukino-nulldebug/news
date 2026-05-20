@@ -3,3 +3,5 @@
 .env.*
 !.env.example
 logs/*.log
+morning-news/logs/*.log
+**/__pycache__/
