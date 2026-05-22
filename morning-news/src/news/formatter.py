@@ -1,16 +1,23 @@
-"""Morning News フェーズ1 のニュース概要文を整形する。"""
+"""Morning News のニュース概要文を整形する。"""
 
 from __future__ import annotations
 
 import re
 
+from src.utils.exceptions import SummaryFormatError
+
 NO_SUMMARY_TEXT = "概要はありません。"
+PROCESS_NAME = "news.formatter"
 
 
 def format_summary(summary: str, max_length: int) -> str:
     """概要文の空白を整え、指定文字数以内に丸める。"""
     if max_length <= 0:
-        raise ValueError("max_length は1以上である必要があります。")
+        raise SummaryFormatError(
+            "max_length は1以上である必要があります。",
+            feature_id="F-03",
+            process_name=PROCESS_NAME,
+        )
 
     normalized = re.sub(r"\s+", " ", str(summary or "")).strip()
     if not normalized:

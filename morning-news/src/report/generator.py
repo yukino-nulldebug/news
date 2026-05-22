@@ -1,8 +1,13 @@
-"""Morning News フェーズ1 のMarkdownレポートを生成する。"""
+"""Morning News のMarkdownレポートを生成する。"""
 
 from __future__ import annotations
 
+from src.utils.exceptions import ReportGenerationError
+
 DISCLAIMER = "本レポートは情報提供を目的としており、投資助言ではありません。"
+FEATURE_ID = "F-06"
+PROCESS_NAME = "report.generator"
+REQUIRED_REPORT_KEYS = ("generated_at", "mode", "news_domestic", "news_global", "markets")
 
 
 def _format_number(value) -> str:
@@ -119,37 +124,51 @@ def generate_market_comments(items: list[dict]) -> list[str]:
 
 def generate_report(report_data: dict) -> str:
     """Morning News レポート全体のMarkdown本文を生成する。"""
-    market_comments = generate_market_comments(report_data.get("markets", []))
-    warnings = report_data.get("warnings", [])
+    try:
+        if not isinstance(report_data, dict):
+            raise TypeError("report_data は dict である必要があります。")
 
-    sections = [
-        "# Morning News Report",
-        f"作成日時: {report_data['generated_at']}",
-        f"実行モード: {report_data['mode']}",
-        "",
-        "## 1. 今日の注目ポイント",
-        "",
-        _generate_highlights(report_data),
-        "",
-        generate_news_section("2. 国内ニュース", report_data.get("news_domestic", [])),
-        "",
-        generate_news_section("3. 海外ニュース", report_data.get("news_global", [])),
-        "",
-        generate_market_section(report_data.get("markets", [])),
-        "",
-        "## 5. 市況コメント",
-        "",
-    ]
+        missing_keys = [key for key in REQUIRED_REPORT_KEYS if key not in report_data]
+        if missing_keys:
+            raise KeyError(", ".join(missing_keys))
 
-    if market_comments:
-        sections.extend(f"- {comment}" for comment in market_comments)
-    else:
-        sections.append("- 市況コメントを生成できませんでした。")
+        market_comments = generate_market_comments(report_data.get("markets", []))
+        warnings = report_data.get("warnings", [])
 
-    sections.extend(["", "## 6. 注意事項", "", DISCLAIMER])
+        sections = [
+            "# Morning News Report",
+            f"作成日時: {report_data['generated_at']}",
+            f"実行モード: {report_data['mode']}",
+            "",
+            "## 1. 今日の注目ポイント",
+            "",
+            _generate_highlights(report_data),
+            "",
+            generate_news_section("2. 国内ニュース", report_data.get("news_domestic", [])),
+            "",
+            generate_news_section("3. 海外ニュース", report_data.get("news_global", [])),
+            "",
+            generate_market_section(report_data.get("markets", [])),
+            "",
+            "## 5. 市況コメント",
+            "",
+        ]
 
-    if warnings:
-        sections.extend(["", "### 警告", ""])
-        sections.extend(f"- {warning}" for warning in warnings)
+        if market_comments:
+            sections.extend(f"- {comment}" for comment in market_comments)
+        else:
+            sections.append("- 市況コメントを生成できませんでした。")
 
-    return "\n".join(sections).rstrip() + "\n"
+        sections.extend(["", "## 6. 注意事項", "", DISCLAIMER])
+
+        if warnings:
+            sections.extend(["", "### 警告", ""])
+            sections.extend(f"- {warning}" for warning in warnings)
+
+        return "\n".join(sections).rstrip() + "\n"
+    except (KeyError, TypeError, ValueError) as error:
+        raise ReportGenerationError(
+            f"レポート生成に失敗しました: {error}",
+            feature_id=FEATURE_ID,
+            process_name=PROCESS_NAME,
+        ) from error

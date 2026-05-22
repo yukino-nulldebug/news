@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morning News 詳細設計 Phase 2</title>
+    <link rel="stylesheet" href="../assets/detail-design-phase2.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        if (!window.mermaid) return;
+        window.mermaid.initialize({
+          startOnLoad: true,
+          theme: "base",
+          themeVariables: {
+            background: "#ffffff",
+            primaryColor: "#f2f2f3",
+            primaryTextColor: "#1a1a1c",
+            primaryBorderColor: "#8f9096",
+            lineColor: "#8f9096",
+            secondaryColor: "#ffffff",
+            tertiaryColor: "#f7f7f8",
+            fontFamily: "Noto Sans JP, Hiragino Sans, Yu Gothic, system-ui, sans-serif"
+          }
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <header class="deck-header">
+      <p class="deck-label">Portfolio Detail Design Deck</p>
+      <h1>Morning News 詳細設計 Phase 2</h1>
+      <ul class="deck-meta">
+        <li>版: draft</li>
+        <li>更新日: 2026-05-22</li>
+        <li>正本: docs/detail-design/詳細設計Phase 2.md</li>
+        <li>対象: ログ・エラー処理追加</li>
+      </ul>
+      <nav class="deck-nav" aria-label="ドキュメント内ナビゲーション">
+        <a href="../index.html">ドキュメント一覧へ戻る</a>
+        <a href="./detail-design-phase1.html">詳細設計 Phase 1 を見る</a>
+        <a href="./basic-design.html">基本設計を見る</a>
+        <a href="./requirements.html">要件定義を見る</a>
+      </nav>
+    </header>
+
+    <main class="deck">
+      <article class="slide cover phase2-cover" id="slide-01">
+        <p class="slide-index">01</p>
+        <h2>1. 詳細設計の目的</h2>
+        <p class="lead">
+          Phase 2 では、要件定義および基本設計で定義した <code>F-09 エラーログ</code> を中心に、
+          ログ出力、例外処理、失敗理由の集計、終了コード制御を具体化する。
+        </p>
+        <div class="summary-grid">
+          <section class="summary-card">
+            <h3>開始</h3>
+            <p>起動・設定</p>
+          </section>
+          <section class="summary-card">
+            <h3>成功</h3>
+            <p>件数・保存先</p>
+          </section>
+          <section class="summary-card">
+            <h3>警告</h3>
+            <p>継続可能</p>
+          </section>
+          <section class="summary-card">
+            <h3>失敗</h3>
+            <p>理由・終了コード</p>
+          </section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart LR
+    phase1["Phase 1 の処理"] --> start["開始ログ"]
+    phase1 --> success["成功ログ"]
+    phase1 --> warning["警告ログ"]
+    phase1 --> error["失敗ログ"]
+    success --> summary["実行結果サマリー"]
+    warning --> summary
+    error --> summary
+    summary --> exitCode["終了コード"]</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-scope" id="slide-02">
+        <p class="slide-index">02</p>
+        <h2>2. Phase 2 の対象範囲</h2>
+        <div class="phase-boundary">
+          <section class="panel panel-in">
+            <h3>Phase 2 で実装する機能</h3>
+            <ul class="boundary-list">
+              <li>ログ形式の詳細化</li>
+              <li>処理開始・終了ログ</li>
+              <li>件数ログと失敗理由ログ</li>
+              <li>例外クラス整理</li>
+              <li>警告・エラー集計</li>
+              <li>終了コード制御</li>
+              <li>ログ出力失敗時のフォールバック</li>
+            </ul>
+          </section>
+          <section class="panel panel-out">
+            <h3>Phase 2 では実装しない機能</h3>
+            <ul class="boundary-list">
+              <li>RSS / API からの外部データ取得</li>
+              <li><code>.env</code> によるAPIキー読み込み</li>
+              <li>pytest の網羅的な自動テスト</li>
+              <li>ログローテーション</li>
+              <li>JSON形式ログ</li>
+              <li>通知連携</li>
+            </ul>
+          </section>
+        </div>
+        <div class="table-wrap">
+          <table class="mini-table">
+            <thead>
+              <tr><th>基本設計の項目</th><th>Phase 2 での具体化</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>9. ログ設計</td><td>ログ形式、出力タイミング、機能ID、処理名を詳細化する。</td></tr>
+              <tr><td>10. エラー処理方針</td><td>継続可否、例外クラス、終了コードを詳細化する。</td></tr>
+              <tr><td>13. テスト方針</td><td>ログ内容と終了コードを確認観点として定義する。</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-03">
+        <p class="slide-index">03</p>
+        <h2>3. ファイル構成</h2>
+        <p class="section-note">
+          Phase 1 の構成を維持しつつ、<code>src/utils/</code> 配下へ例外、実行結果集計、ログ基盤を追加・改修する。
+        </p>
+        <div class="module-lanes">
+          <section class="module-lane">
+            <h3>Entry</h3>
+            <div class="module-stack">
+              <div class="module-node"><strong><code>main.py</code></strong>ログ出力、例外捕捉、終了コード制御</div>
+            </div>
+          </section>
+          <section class="module-lane">
+            <h3>Input</h3>
+            <div class="module-stack">
+              <div class="module-node"><strong><code>config/settings.py</code></strong>基本設定値</div>
+              <div class="module-node"><strong><code>news/fetcher.py</code></strong>ニュースJSON読み込み</div>
+              <div class="module-node"><strong><code>market/fetcher.py</code></strong>マーケットJSON読み込み</div>
+            </div>
+          </section>
+          <section class="module-lane">
+            <h3>Transform</h3>
+            <div class="module-stack">
+              <div class="module-node"><strong><code>news/formatter.py</code></strong>概要文整形</div>
+              <div class="module-node"><strong><code>market/calculator.py</code></strong>変化率計算</div>
+            </div>
+          </section>
+          <section class="module-lane">
+            <h3>Output / Utils</h3>
+            <div class="module-stack">
+              <div class="module-node"><strong><code>report/generator.py</code></strong>Markdown生成</div>
+              <div class="module-node"><strong><code>report/writer.py</code></strong>レポート保存</div>
+              <div class="module-node"><strong><code>utils/*</code></strong>logger / exceptions / execution_result</div>
+            </div>
+          </section>
+        </div>
+        <div class="code-preview">
+          <pre><code>morning-news/
+├── main.py
+├── src/
+│   ├── config/settings.py
+│   ├── news/fetcher.py
+│   ├── news/formatter.py
+│   ├── market/fetcher.py
+│   ├── market/calculator.py
+│   ├── report/generator.py
+│   ├── report/writer.py
+│   └── utils/
+│       ├── exceptions.py
+│       ├── execution_result.py
+│       └── logger.py
+├── reports/
+└── logs/app.log</code></pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-04">
+        <p class="slide-index">04</p>
+        <h2>4. ログ設計</h2>
+        <div class="log-sample">
+          <section class="panel">
+            <h3>出力先とフォールバック</h3>
+            <ul class="compact-list">
+              <li>標準出力: 実行中に確認するためのログ。</li>
+              <li><code>logs/app.log</code>: 実行履歴として残すログ。</li>
+              <li><code>logs/</code> が存在しない場合は作成する。</li>
+              <li>ファイル出力に失敗した場合、標準出力のみで処理を継続する。</li>
+            </ul>
+          </section>
+          <section class="panel">
+            <h3>ログ形式</h3>
+            <div class="code-preview">
+              <pre><code>YYYY-MM-DD HH:mm:ss LEVEL FEATURE_ID PROCESS_NAME MESSAGE</code></pre>
+            </div>
+            <div class="log-token-map">
+              <div class="log-token"><strong>日時</strong>JST</div>
+              <div class="log-token"><strong>LEVEL</strong>INFO / WARNING / ERROR</div>
+              <div class="log-token"><strong>FEATURE_ID</strong>F-01 から F-10</div>
+              <div class="log-token"><strong>PROCESS</strong>module.function</div>
+              <div class="log-token"><strong>MESSAGE</strong>件数、失敗理由、保存先</div>
+            </div>
+          </section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart LR
+    process["各処理"] --> info["INFO: 起動 / 件数 / 保存"]
+    process --> warning["WARNING: 代替処理で継続"]
+    process --> error["ERROR: 停止または終了コード変更"]
+    info --> appLog["logs/app.log"]
+    warning --> appLog
+    error --> appLog
+    appLog --> fallback{"書き込み不可"}
+    fallback --> stdout["標準出力のみで継続"]</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-05">
+        <p class="slide-index">05</p>
+        <h2>4.5 機能ID対応</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>機能ID</th>
+                <th>対象</th>
+                <th>主なログ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>F-01</code></td><td>国内ニュース取得</td><td>国内ニュース読み込み開始、件数、失敗理由</td></tr>
+              <tr><td><code>F-02</code></td><td>海外ニュース取得</td><td>海外ニュース読み込み開始、件数、失敗理由</td></tr>
+              <tr><td><code>F-03</code></td><td>概要文整形</td><td>概要文整形開始、整形件数、概要文なし</td></tr>
+              <tr><td><code>F-04</code></td><td>マーケット情報取得</td><td>マーケット読み込み開始、件数、失敗理由</td></tr>
+              <tr><td><code>F-05</code></td><td>変化率計算</td><td>計算開始、計算件数、計算不可理由</td></tr>
+              <tr><td><code>F-06</code></td><td>レポート生成</td><td>Markdown生成開始、生成完了、生成失敗</td></tr>
+              <tr><td><code>F-07</code></td><td>市況コメント</td><td>市況コメント生成件数、禁止表現チェック結果</td></tr>
+              <tr><td><code>F-08</code></td><td>レポート保存</td><td>保存開始、保存先、保存失敗</td></tr>
+              <tr><td><code>F-09</code></td><td>エラーログ</td><td>警告件数、エラー件数、失敗理由の記録</td></tr>
+              <tr><td><code>F-10</code></td><td>サンプル実行</td><td>実行モード、APIキー不要実行、モード情報</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-06">
+        <p class="slide-index">06</p>
+        <h2>5. 例外設計</h2>
+        <p class="section-note">
+          Phase 2 では、失敗箇所と機能IDをログに残しやすくするため、標準例外をアプリケーション専用例外へ変換する。
+        </p>
+        <div class="mermaid-panel">
+          <pre class="mermaid">classDiagram
+    class MorningNewsError {
+      message
+      feature_id
+      process_name
+      recoverable
+    }
+    MorningNewsError <|-- ConfigError
+    MorningNewsError <|-- DataLoadError
+    MorningNewsError <|-- DataValidationError
+    MorningNewsError <|-- SummaryFormatError
+    MorningNewsError <|-- MarketCalculationError
+    MorningNewsError <|-- ReportGenerationError
+    MorningNewsError <|-- ReportWriteError
+    MorningNewsError <|-- LoggingSetupError</pre>
+        </div>
+        <div class="error-grid">
+          <section class="error-card">
+            <strong>データ・設定</strong>
+            <ul class="compact-list">
+              <li><code>ConfigError</code>: 設定読み込み・設定値不正</li>
+              <li><code>DataLoadError</code>: ファイル読み込み失敗、JSON解析失敗</li>
+              <li><code>DataValidationError</code>: 必須項目欠損、型不正</li>
+            </ul>
+          </section>
+          <section class="error-card">
+            <strong>整形・計算</strong>
+            <ul class="compact-list">
+              <li><code>SummaryFormatError</code>: 概要文整形失敗</li>
+              <li><code>MarketCalculationError</code>: 前日比・変化率計算失敗</li>
+              <li>継続可能な場合は警告として扱う。</li>
+            </ul>
+          </section>
+          <section class="error-card">
+            <strong>生成・保存・ログ</strong>
+            <ul class="compact-list">
+              <li><code>ReportGenerationError</code>: Markdown生成失敗</li>
+              <li><code>ReportWriteError</code>: レポート保存失敗</li>
+              <li><code>LoggingSetupError</code>: 原則送出せず標準出力へフォールバック</li>
+            </ul>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-07">
+        <p class="slide-index">07</p>
+        <h2>6. 実行結果集計設計</h2>
+        <div class="two-col">
+          <section class="panel">
+            <h3><code>ExecutionResult</code></h3>
+            <div class="code-preview">
+              <pre><code>{
+  "status": "running",
+  "mode": "sample",
+  "started_at": "2026-05-21 07:00:00 JST",
+  "ended_at": null,
+  "counts": {
+    "news_domestic": 5,
+    "news_global": 5,
+    "markets": 3,
+    "market_comments": 3,
+    "warnings": 0,
+    "errors": 0
+  },
+  "warnings": [],
+  "errors": []
+}</code></pre>
+            </div>
+          </section>
+          <section class="panel">
+            <h3>集計関数</h3>
+            <ul class="compact-list">
+              <li><code>create_execution_result(mode, started_at)</code></li>
+              <li><code>set_count(result, key, count)</code></li>
+              <li><code>record_warning(result, feature_id, process_name, message)</code></li>
+              <li><code>record_error(result, feature_id, process_name, message)</code></li>
+              <li><code>finish_execution(result, status, ended_at)</code></li>
+              <li><code>build_summary_message(result)</code></li>
+            </ul>
+          </section>
+        </div>
+        <div class="status-map">
+          <section class="status-card"><strong><code>running</code></strong><p>実行中。</p></section>
+          <section class="status-card"><strong><code>success</code></strong><p>エラーなしで正常終了。</p></section>
+          <section class="status-card"><strong><code>warning</code></strong><p>警告はあるが保存完了。</p></section>
+          <section class="status-card"><strong><code>failed</code> / <code>data_failed</code></strong><p>生成保存失敗、または必須データ失敗。</p></section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-08">
+        <p class="slide-index">08</p>
+        <h2>7. 関数設計</h2>
+        <div class="function-map">
+          <section class="function-card">
+            <h3><code>main.py</code></h3>
+            <ul>
+              <li><code>main()</code>: 全体処理を実行し、終了コードを返す。</li>
+              <li><code>build_report_data(settings, logger, result)</code>: データ取得、整形、計算、警告集計を行う。</li>
+              <li><code>log_exception()</code>: 例外情報をログと実行結果に記録する。</li>
+              <li><code>log_execution_summary()</code>: 実行結果サマリーを出力する。</li>
+            </ul>
+          </section>
+          <section class="function-card">
+            <h3><code>utils/</code></h3>
+            <ul>
+              <li><code>setup_logger(log_dir)</code>: 標準出力と <code>logs/app.log</code> のロガーを作成する。</li>
+              <li><code>log_info()</code> / <code>log_warning()</code> / <code>log_error()</code>: 機能ID付きログを出す。</li>
+              <li><code>record_warning()</code> / <code>record_error()</code>: 集計を更新する。</li>
+            </ul>
+          </section>
+          <section class="function-card">
+            <h3><code>news/</code></h3>
+            <ul>
+              <li><code>load_news_items(file_path, feature_id)</code>: 指定JSONを読み込み、機能IDで失敗箇所を識別する。</li>
+              <li><code>fetch_sample_news(settings)</code>: 実装する場合は薄いラッパーに限定する。</li>
+              <li><code>format_news_items(items, max_length)</code>: 概要文なし件数を集計可能にする。</li>
+            </ul>
+          </section>
+          <section class="function-card">
+            <h3><code>market/</code></h3>
+            <ul>
+              <li><code>calculate_change(current_value, previous_close)</code>: 型不正は例外、<code>previous_close == 0</code> は <code>None</code> を返す。</li>
+              <li><code>calculate_market_changes(items)</code>: 計算不可件数と対象指標名を返せるようにする。</li>
+            </ul>
+          </section>
+          <section class="function-card">
+            <h3><code>report/</code></h3>
+            <ul>
+              <li><code>generate_report(report_data)</code>: 必須キー欠損時は専用例外を送出する。</li>
+              <li><code>generate_market_comments(items)</code>: 生成件数をログ対象として扱う。</li>
+              <li><code>write_report(markdown, report_path)</code>: <code>OSError</code> を保存用例外へ変換する。</li>
+            </ul>
+          </section>
+          <section class="function-card">
+            <h3>基本呼び出し</h3>
+            <div class="code-preview">
+              <pre><code>domestic_news = load_news_items(settings.news_jp_path, "F-01")
+global_news = load_news_items(settings.news_global_path, "F-02")</code></pre>
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-09">
+        <p class="slide-index">09</p>
+        <h2>8. 処理順序</h2>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart TD
+    A["python main.py"] --> B["設定読み込み"]
+    B --> C["ログ初期化"]
+    C --> D["実行結果集計を初期化"]
+    D --> E["起動ログ出力"]
+    E --> F["国内ニュースJSON読み込み"]
+    F --> G["海外ニュースJSON読み込み"]
+    G --> H["ニュース概要文整形"]
+    H --> I["マーケットJSON読み込み"]
+    I --> J["前日比・変化率計算"]
+    J --> K["ReportData作成"]
+    K --> L["Markdown生成"]
+    L --> M["reports/YYYY-MM-DD.md 保存"]
+    M --> N["実行結果サマリーをログ出力"]
+    N --> O["終了コード0"]</pre>
+        </div>
+        <div class="pipeline">
+          <section class="pipeline-step"><span class="step-label">Warning</span><strong>継続可能</strong><p>WARNINGログ、warnings追加、代替値設定。</p></section>
+          <section class="pipeline-step"><span class="step-label">Data</span><strong>データ失敗</strong><p><code>DataLoadError</code> / <code>DataValidationError</code>。</p></section>
+          <section class="pipeline-step"><span class="step-label">Output</span><strong>生成保存失敗</strong><p><code>ReportGenerationError</code> / <code>ReportWriteError</code>。</p></section>
+          <section class="pipeline-step"><span class="step-label">Summary</span><strong>F-09</strong><p>警告件数、エラー件数、ステータスを記録。</p></section>
+          <section class="pipeline-step"><span class="step-label">Exit</span><strong>0 / 1 / 2</strong><p>CLIアプリとして結果を返す。</p></section>
+          <section class="pipeline-step"><span class="step-label">Report</span><strong>保存完了</strong><p>保存できた警告あり正常系は <code>0</code>。</p></section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-10">
+        <p class="slide-index">10</p>
+        <h2>9. エラー処理詳細</h2>
+        <div class="exit-code-map">
+          <section class="exit-code">
+            <strong><code>0</code></strong>
+            <p>レポート保存まで完了した。警告があっても保存できた場合は正常終了として扱う。</p>
+          </section>
+          <section class="exit-code">
+            <strong><code>1</code></strong>
+            <p>設定、Markdown生成、レポート保存など、出力処理に失敗した。</p>
+          </section>
+          <section class="exit-code">
+            <strong><code>2</code></strong>
+            <p>必須データの読み込みまたは検証に失敗し、レポートを作成できなかった。</p>
+          </section>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>発生箇所</th><th>条件</th><th>動作</th><th>ログ</th><th>終了コード</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>ログ初期化</td><td><code>logs/app.log</code> に書き込めない</td><td>標準出力のみで継続</td><td><code>WARNING F-09</code></td><td><code>0</code></td></tr>
+              <tr><td>ニュース読み込み</td><td>JSONが存在しない、必須項目欠損</td><td>処理停止</td><td><code>ERROR F-01/F-02</code></td><td><code>2</code></td></tr>
+              <tr><td>概要文整形</td><td><code>summary</code> が空</td><td>代替文を設定して継続</td><td><code>WARNING F-03</code></td><td><code>0</code></td></tr>
+              <tr><td>概要文整形</td><td><code>max_length &lt;= 0</code></td><td>処理停止</td><td><code>ERROR F-03</code></td><td><code>1</code></td></tr>
+              <tr><td>マーケット計算</td><td><code>previous_close == 0</code></td><td><code>N/A</code> として継続</td><td><code>WARNING F-05</code></td><td><code>0</code></td></tr>
+              <tr><td>レポート保存</td><td>ファイル書き込み失敗</td><td>処理停止</td><td><code>ERROR F-08</code></td><td><code>1</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-11">
+        <p class="slide-index">11</p>
+        <h2>10. <code>ReportData</code> への反映</h2>
+        <div class="data-structure-grid">
+          <section class="data-card">
+            <h3><code>ReportData</code></h3>
+            <ul class="field-list">
+              <li><code>generated_at</code><span>レポート生成日時</span></li>
+              <li><code>mode</code><span>Phase 2 では <code>sample</code></span></li>
+              <li><code>news_domestic</code><span>国内ニュース一覧</span></li>
+              <li><code>news_global</code><span>海外ニュース一覧</span></li>
+              <li><code>markets</code><span>マーケット情報一覧</span></li>
+              <li><code>warnings</code><span>レポートに表示する継続可能な警告</span></li>
+              <li><code>execution_summary</code><span>ログと確認用の実行結果概要</span></li>
+            </ul>
+          </section>
+          <section class="data-card">
+            <h3>表示してよい警告</h3>
+            <ul class="compact-list">
+              <li>概要文が空だったため代替文を設定した。</li>
+              <li>変化率を計算できなかったため <code>N/A</code> と表示した。</li>
+              <li>一部の任意項目が欠損していたため代替値を設定した。</li>
+            </ul>
+          </section>
+          <section class="data-card">
+            <h3>ログのみに残す情報</h3>
+            <ul class="compact-list">
+              <li>ファイルシステムの詳細なエラーメッセージ。</li>
+              <li>内部パスの長いトレース。</li>
+              <li>APIキー、トークン、認証情報。</li>
+              <li>サンプルJSONの本文全体。</li>
+            </ul>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-12">
+        <p class="slide-index">12</p>
+        <h2>11. ログ出力例</h2>
+        <div class="log-example-grid">
+          <section class="panel">
+            <h3>正常終了</h3>
+            <div class="code-preview">
+              <pre><code>INFO F-10 main.main Morning News を開始しました
+INFO F-01 news.fetcher 国内ニュース読み込み件数: 5
+INFO F-04 market.fetcher マーケット読み込み件数: 3
+INFO F-08 report.writer レポート保存先: reports/YYYY-MM-DD.md
+INFO F-09 main.summary 実行結果: status=success warnings=0 errors=0</code></pre>
+            </div>
+          </section>
+          <section class="panel">
+            <h3>警告あり正常終了</h3>
+            <div class="code-preview">
+              <pre><code>WARNING F-05 market.calculator USD/JPY は previous_close が 0 のため変化率を計算できませんでした
+INFO F-08 report.writer レポート保存先: reports/YYYY-MM-DD.md
+WARNING F-09 main.summary 実行結果: status=warning warnings=1 errors=0</code></pre>
+            </div>
+          </section>
+          <section class="panel">
+            <h3>異常終了</h3>
+            <div class="code-preview">
+              <pre><code>INFO F-10 main.main Morning News を開始しました
+ERROR F-01 news.fetcher sample_data/news_jp.json が見つかりません
+ERROR F-09 main.summary 実行結果: status=data_failed warnings=0 errors=1
+ERROR F-10 main.main Morning News は失敗しました</code></pre>
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-13">
+        <p class="slide-index">13</p>
+        <h2>12. 実装手順</h2>
+        <div class="implementation-order">
+          <section class="implementation-step"><strong>1</strong><code>src/utils/exceptions.py</code> を追加する。</section>
+          <section class="implementation-step"><strong>2</strong><code>src/utils/execution_result.py</code> を追加する。</section>
+          <section class="implementation-step"><strong>3</strong><code>src/utils/logger.py</code> のフォーマットを変更する。</section>
+          <section class="implementation-step"><strong>4</strong><code>main.py</code> に実行結果集計とサマリーログを追加する。</section>
+          <section class="implementation-step"><strong>5</strong>fetcher / formatter / calculator / generator / writer の例外変換を行う。</section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">sequenceDiagram
+    participant M as main.py
+    participant L as logger.py
+    participant R as execution_result.py
+    participant N as news/fetcher.py
+    participant G as report/generator.py
+    participant W as report/writer.py
+
+    M->>L: setup_logger(log_dir)
+    M->>R: create_execution_result()
+    M->>N: load_news_items(path, feature_id)
+    N-->>M: list[NewsItem]
+    M->>G: generate_report(report_data)
+    G-->>M: markdown
+    M->>W: write_report(markdown, path)
+    W-->>M: saved path
+    M->>R: finish_execution(status)
+    M->>L: log_execution_summary()</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-14">
+        <p class="slide-index">14</p>
+        <h2>13. 確認観点 / 14. 受け入れ条件</h2>
+        <div class="test-grid">
+          <section class="panel">
+            <h3>確認観点</h3>
+            <ul class="compact-list">
+              <li><code>python main.py</code> が終了コード <code>0</code> で終了する。</li>
+              <li><code>logs/app.log</code> に起動、読み込み、整形、計算、生成、保存、終了のログがある。</li>
+              <li>警告発生時に <code>WARNING</code> ログと警告件数が残る。</li>
+              <li>データ不備で <code>ERROR</code> と終了コード <code>2</code> になる。</li>
+              <li>生成または保存失敗で終了コード <code>1</code> になる。</li>
+              <li>APIキー相当の値がログに含まれない。</li>
+            </ul>
+          </section>
+          <section class="panel">
+            <h3>受け入れ条件</h3>
+            <ul class="compact-list">
+              <li><code>logs/app.log</code> が作成または追記される。</li>
+              <li>日時、ログレベル、機能ID、処理名、メッセージが出力される。</li>
+              <li>正常終了時に読み込み件数、保存先、実行結果サマリーが残る。</li>
+              <li>異常終了時に失敗した機能ID、処理名、失敗理由が残る。</li>
+              <li>終了コード <code>1</code> と <code>2</code> を区別する。</li>
+              <li>ロガー初期化失敗時も標準出力で継続できる。</li>
+            </ul>
+          </section>
+        </div>
+        <div class="acceptance-grid">
+          <div class="acceptance-check"><strong>ログ作成</strong><code>logs/app.log</code> が作成または追記される。</div>
+          <div class="acceptance-check"><strong>形式</strong>日時、レベル、機能ID、処理名、メッセージがある。</div>
+          <div class="acceptance-check"><strong>正常系</strong>件数、保存先、サマリーが残る。</div>
+          <div class="acceptance-check"><strong>警告系</strong>継続しつつ警告件数を集計する。</div>
+          <div class="acceptance-check"><strong>異常系</strong>失敗機能、処理名、理由が残る。</div>
+          <div class="acceptance-check"><strong>終了コード</strong><code>1</code> と <code>2</code> を区別する。</div>
+          <div class="acceptance-check"><strong>機密情報</strong>APIキーや認証情報を出さない。</div>
+          <div class="acceptance-check"><strong>フォールバック</strong>ロガー失敗時も標準出力で継続する。</div>
+        </div>
+      </article>
+
+      <article class="slide" id="slide-15">
+        <p class="slide-index">15</p>
+        <h2>15. 次フェーズで追加するもの</h2>
+        <div class="next-phase-map">
+          <section class="next-phase-card">
+            <span class="phase-label">Phase 3</span>
+            <strong>境界値対応</strong>
+            <p>概要文整形と変化率計算の境界値対応、表示ルールの強化。</p>
+          </section>
+          <section class="next-phase-card">
+            <span class="phase-label">Phase 4</span>
+            <strong>RSS/API取得</strong>
+            <p>RSS/API取得、<code>.env</code> 読み込み、APIキー未設定時の警告ログ。</p>
+          </section>
+          <section class="next-phase-card">
+            <span class="phase-label">Phase 5</span>
+            <strong>pytest</strong>
+            <p>単体テスト、結合テスト、異常系テストを整備する。</p>
+          </section>
+          <section class="next-phase-card">
+            <span class="phase-label">Phase 6</span>
+            <strong>公開整備</strong>
+            <p>README、<code>.env.example</code>、サンプルレポート、公開前チェック。</p>
+          </section>
+          <section class="next-phase-card">
+            <span class="phase-label">対象外</span>
+            <strong>Phase 2 では未実装</strong>
+            <p>外部API通信、APIキー管理、定時実行、通知、Web UI は実装しない。</p>
+          </section>
+        </div>
+      </article>
+    </main>
+
+    <footer class="deck-footer">
+      注: 本ドキュメントはレビュー用HTML。正本はMarkdownを使用する。更新日: 2026-05-22 / 出典: 詳細設計Phase 2.md
+    </footer>
+  </body>
+</html>
