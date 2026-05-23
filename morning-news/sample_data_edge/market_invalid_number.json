@@ -1,0 +1,18 @@
+{
+  "metadata": {
+    "data_type": "edge_sample",
+    "created_for": "phase3 invalid number check",
+    "source_policy": "fictional market data for local demo",
+    "fetched_at": "2026-05-19T08:00:00+09:00"
+  },
+  "items": [
+    {
+      "symbol": "EDGE_STRING_VALUE",
+      "name": "現在値文字列サンプル",
+      "current_value": "100.0",
+      "previous_close": 99.0,
+      "unit": "points",
+      "fetched_at": "2026-05-19T08:00:00+09:00"
+    }
+  ]
+}

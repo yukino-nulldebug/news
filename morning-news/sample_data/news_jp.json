@@ -33,6 +33,24 @@
       "source": "Sample Tech JP",
       "published_at": "2026-05-19T07:20:00+09:00",
       "summary": "企業の業務効率化需要を背景に、AI関連サービスを提供する国内IT企業への関心が高まっている。"
+    },
+    {
+      "region": "domestic",
+      "category": "policy",
+      "title": "政府の経済対策案を受け、関連業界の動向に関心",
+      "url": "https://example.com/jp-news-004",
+      "source": "Sample Policy JP",
+      "published_at": "2026-05-19T07:30:00+09:00",
+      "summary": "政府の経済対策案を受け、家計支援や企業投資に関連する業界の動向が市場関係者の注目を集めている。"
+    },
+    {
+      "region": "domestic",
+      "category": "retail",
+      "title": "国内小売企業、訪日需要回復を背景に販売計画を見直し",
+      "url": "https://example.com/jp-news-005",
+      "source": "Sample Retail JP",
+      "published_at": "2026-05-19T07:40:00+09:00",
+      "summary": "訪日需要の回復や都市部店舗の客足増加を背景に、国内小売企業では在庫計画や販売促進策を見直す動きが出ている。"
     }
   ]
 }

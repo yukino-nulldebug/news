@@ -7,7 +7,18 @@ from src.utils.exceptions import ReportGenerationError
 DISCLAIMER = "本レポートは情報提供を目的としており、投資助言ではありません。"
 FEATURE_ID = "F-06"
 PROCESS_NAME = "report.generator"
-REQUIRED_REPORT_KEYS = ("generated_at", "mode", "news_domestic", "news_global", "markets")
+REQUIRED_REPORT_KEYS = (
+    "generated_at",
+    "mode",
+    "news_domestic",
+    "news_global",
+    "markets",
+    "comments",
+    "warnings",
+    "errors",
+    "disclaimer",
+    "execution_summary",
+)
 
 
 def _format_number(value) -> str:
@@ -132,8 +143,8 @@ def generate_report(report_data: dict) -> str:
         if missing_keys:
             raise KeyError(", ".join(missing_keys))
 
-        market_comments = generate_market_comments(report_data.get("markets", []))
-        warnings = report_data.get("warnings", [])
+        market_comments = report_data["comments"]
+        warnings = report_data["warnings"]
 
         sections = [
             "# Morning News Report",
@@ -159,7 +170,7 @@ def generate_report(report_data: dict) -> str:
         else:
             sections.append("- 市況コメントを生成できませんでした。")
 
-        sections.extend(["", "## 6. 注意事項", "", DISCLAIMER])
+        sections.extend(["", "## 6. 注意事項", "", report_data["disclaimer"]])
 
         if warnings:
             sections.extend(["", "### 警告", ""])

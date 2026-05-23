@@ -33,6 +33,24 @@
       "source": "Sample Economy News",
       "published_at": "2026-05-19T07:25:00+09:00",
       "summary": "Investors monitored inflation data and central bank comments to assess the outlook for rates and global equity markets."
+    },
+    {
+      "region": "global",
+      "category": "energy",
+      "title": "European markets monitor energy prices and policy outlook",
+      "url": "https://example.com/global-news-004",
+      "source": "Sample Europe News",
+      "published_at": "2026-05-19T07:35:00+09:00",
+      "summary": "European markets watched energy price movements and policy discussions as investors evaluated cost pressures across manufacturing and transportation sectors."
+    },
+    {
+      "region": "global",
+      "category": "asia",
+      "title": "Asian equities trade mixed as investors assess regional earnings",
+      "url": "https://example.com/global-news-005",
+      "source": "Sample Asia News",
+      "published_at": "2026-05-19T07:45:00+09:00",
+      "summary": "Asian equity markets showed mixed movement as investors reviewed regional corporate earnings, currency trends, and demand expectations in major export sectors."
     }
   ]
 }

@@ -1,0 +1,42 @@
+{
+  "metadata": {
+    "data_type": "edge_sample",
+    "created_for": "phase3 boundary checks",
+    "source_policy": "fictional market data for local demo",
+    "fetched_at": "2026-05-19T08:00:00+09:00"
+  },
+  "items": [
+    {
+      "symbol": "EDGE_UP",
+      "name": "上昇サンプル",
+      "current_value": 105.0,
+      "previous_close": 100.0,
+      "unit": "points",
+      "fetched_at": "2026-05-19T08:00:00+09:00"
+    },
+    {
+      "symbol": "EDGE_ZERO_PREV",
+      "name": "前日終値ゼロサンプル",
+      "current_value": 100.0,
+      "previous_close": 0.0,
+      "unit": "points",
+      "fetched_at": "2026-05-19T08:00:00+09:00"
+    },
+    {
+      "symbol": "EDGE_DOWN",
+      "name": "下落サンプル",
+      "current_value": 95.0,
+      "previous_close": 100.0,
+      "unit": "points",
+      "fetched_at": "2026-05-19T08:00:00+09:00"
+    },
+    {
+      "symbol": "EDGE_FLAT",
+      "name": "横ばいサンプル",
+      "current_value": 100.0,
+      "previous_close": 100.0,
+      "unit": "points",
+      "fetched_at": "2026-05-19T08:00:00+09:00"
+    }
+  ]
+}

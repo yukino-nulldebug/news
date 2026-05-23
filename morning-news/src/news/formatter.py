@@ -26,7 +26,7 @@ def format_summary(summary: str, max_length: int) -> str:
     if len(normalized) <= max_length:
         return normalized
 
-    if max_length <= 3:
+    if max_length < 3:
         return "." * max_length
     return normalized[: max_length - 3].rstrip() + "..."
 

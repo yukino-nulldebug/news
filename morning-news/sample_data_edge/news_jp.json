@@ -1,0 +1,38 @@
+{
+  "metadata": {
+    "data_type": "edge_sample",
+    "created_for": "phase3 boundary checks",
+    "source_policy": "fictional sample data, not copied from real news articles",
+    "language": "ja",
+    "region": "domestic"
+  },
+  "items": [
+    {
+      "region": "domestic",
+      "category": "economy",
+      "title": "概要文が空の国内ニュースサンプル",
+      "url": "https://example.com/edge-jp-news-001",
+      "source": "Sample Edge JP",
+      "published_at": "2026-05-19T08:00:00+09:00",
+      "summary": ""
+    },
+    {
+      "region": "domestic",
+      "category": "market",
+      "title": "改行と重複空白を含む国内ニュースサンプル",
+      "url": "https://example.com/edge-jp-news-002",
+      "source": "Sample Edge Market JP",
+      "published_at": "2026-05-19T08:10:00+09:00",
+      "summary": "国内市場では\n為替動向や    企業決算を受けて、投資家が短期的な需給と業績見通しを確認する動きが見られている。"
+    },
+    {
+      "region": "domestic",
+      "category": "tech",
+      "title": "長文概要の国内ニュースサンプル",
+      "url": "https://example.com/edge-jp-news-003",
+      "source": "Sample Edge Tech JP",
+      "published_at": "2026-05-19T08:20:00+09:00",
+      "summary": "国内IT企業の間では、生成AIを活用した業務支援サービス、データ分析基盤、社内問い合わせ対応ツールへの投資が広がっており、導入効果や運用体制、セキュリティ対応を含めた実装力が今後の競争力を左右するとの見方が出ている。"
+    }
+  ]
+}

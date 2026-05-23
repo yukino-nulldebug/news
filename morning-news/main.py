@@ -10,7 +10,7 @@ from src.market.calculator import calculate_market_changes
 from src.market.fetcher import load_market_items
 from src.news.fetcher import load_news_items
 from src.news.formatter import format_news_items
-from src.report.generator import generate_market_comments, generate_report
+from src.report.generator import DISCLAIMER, generate_market_comments, generate_report
 from src.report.writer import build_report_path, write_report
 from src.utils.exceptions import DataLoadError, DataValidationError, MorningNewsError
 from src.utils.execution_result import (
@@ -72,22 +72,6 @@ def build_report_data(settings: dict, logger, result: dict) -> dict:
     set_count(result, "news_global", len(global_news))
     log_info(logger, "F-02", "news.fetcher", "海外ニュース読み込み件数: %s", len(global_news))
 
-    formatted_domestic_news = format_news_items(
-        domestic_news,
-        max_length=settings["summary_max_length"],
-    )
-    formatted_global_news = format_news_items(
-        global_news,
-        max_length=settings["summary_max_length"],
-    )
-    log_info(
-        logger,
-        "F-03",
-        "news.formatter",
-        "ニュース概要文整形件数: %s",
-        len(formatted_domestic_news) + len(formatted_global_news),
-    )
-
     for index, item in enumerate(domestic_news):
         if not str(item.get("summary", "")).strip():
             record_recoverable_warning(
@@ -106,6 +90,22 @@ def build_report_data(settings: dict, logger, result: dict) -> dict:
                 "news.formatter",
                 f"global_news[{index}] の summary が空のため代替文を設定しました",
             )
+
+    formatted_domestic_news = format_news_items(
+        domestic_news,
+        max_length=settings["summary_max_length"],
+    )
+    formatted_global_news = format_news_items(
+        global_news,
+        max_length=settings["summary_max_length"],
+    )
+    log_info(
+        logger,
+        "F-03",
+        "news.formatter",
+        "ニュース概要文整形件数: %s",
+        len(formatted_domestic_news) + len(formatted_global_news),
+    )
 
     log_info(
         logger,
@@ -154,7 +154,10 @@ def build_report_data(settings: dict, logger, result: dict) -> dict:
         "news_domestic": formatted_domestic_news,
         "news_global": formatted_global_news,
         "markets": calculated_markets,
+        "comments": market_comments,
         "warnings": [warning["message"] for warning in result["warnings"]],
+        "errors": [error["message"] for error in result["errors"]],
+        "disclaimer": DISCLAIMER,
         "execution_summary": result,
     }
 

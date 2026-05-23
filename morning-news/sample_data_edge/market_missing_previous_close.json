@@ -1,0 +1,17 @@
+{
+  "metadata": {
+    "data_type": "edge_sample",
+    "created_for": "phase3 missing previous_close check",
+    "source_policy": "fictional market data for local demo",
+    "fetched_at": "2026-05-19T08:00:00+09:00"
+  },
+  "items": [
+    {
+      "symbol": "EDGE_MISSING_PREV",
+      "name": "前日終値欠損サンプル",
+      "current_value": 100.0,
+      "unit": "points",
+      "fetched_at": "2026-05-19T08:00:00+09:00"
+    }
+  ]
+}

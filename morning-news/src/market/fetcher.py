@@ -7,13 +7,9 @@ from pathlib import Path
 
 from src.utils.exceptions import DataLoadError, DataValidationError
 
-REQUIRED_MARKET_FIELDS = ("symbol", "name", "current_value", "previous_close", "fetched_at")
+REQUIRED_MARKET_FIELDS = ("symbol", "name", "fetched_at")
 FEATURE_ID = "F-04"
 PROCESS_NAME = "market.fetcher"
-
-
-def _is_number(value) -> bool:
-    return isinstance(value, (int, float)) and not isinstance(value, bool)
 
 
 def _load_json(file_path: Path, feature_id: str) -> dict:
@@ -64,14 +60,6 @@ def _validate_market_item(
             feature_id=feature_id,
             process_name=PROCESS_NAME,
         )
-
-    for field in ("current_value", "previous_close"):
-        if not _is_number(item[field]):
-            raise DataValidationError(
-                f"{file_path} の items[{index}].{field} は数値である必要があります。",
-                feature_id=feature_id,
-                process_name=PROCESS_NAME,
-            )
 
     normalized = dict(item)
     normalized["unit"] = normalized.get("unit", "")

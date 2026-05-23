@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morning News 詳細設計 Phase 3</title>
+    <link rel="stylesheet" href="../assets/detail-design-phase3.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        if (!window.mermaid) return;
+        window.mermaid.initialize({
+          startOnLoad: true,
+          theme: "base",
+          themeVariables: {
+            background: "#ffffff",
+            primaryColor: "#f2f2f3",
+            primaryTextColor: "#1a1a1c",
+            primaryBorderColor: "#8f9096",
+            lineColor: "#8f9096",
+            secondaryColor: "#ffffff",
+            tertiaryColor: "#f7f7f8",
+            fontFamily: "Noto Sans JP, Hiragino Sans, Yu Gothic, system-ui, sans-serif"
+          }
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <header class="deck-header">
+      <p class="deck-label">Portfolio Detail Design Deck</p>
+      <h1>Morning News 詳細設計 Phase 3</h1>
+      <ul class="deck-meta">
+        <li>版: draft</li>
+        <li>更新日: 2026-05-23</li>
+        <li>正本: docs/detail-design/詳細設計Phase 3.md</li>
+        <li>対象: 概要文整形・変化率計算追加</li>
+      </ul>
+      <nav class="deck-nav" aria-label="ドキュメント内ナビゲーション">
+        <a href="../index.html">ドキュメント一覧へ戻る</a>
+        <a href="./detail-design-phase2.html">詳細設計 Phase 2 を見る</a>
+        <a href="./detail-design-phase1.html">詳細設計 Phase 1 を見る</a>
+        <a href="./basic-design.html">基本設計を見る</a>
+        <a href="./requirements.html">要件定義を見る</a>
+      </nav>
+    </header>
+
+    <main class="deck">
+      <article class="slide cover phase3-cover" id="slide-01">
+        <p class="slide-index">01</p>
+        <h2>1. 詳細設計の目的</h2>
+        <p class="lead">
+          Phase 3 では、Phase 2 のログ・例外基盤を前提に、ニュース概要文とマーケット情報を
+          レポート表示に適した形へ整える。対象は <code>F-03 概要文整形</code> と
+          <code>F-05 変化率計算</code> を中心とする。
+        </p>
+        <div class="summary-grid">
+          <section class="summary-card"><h3>空白正規化</h3><p>改行・重複空白</p></section>
+          <section class="summary-card"><h3>文字数制御</h3><p>120文字以内</p></section>
+          <section class="summary-card"><h3>前日比</h3><p>差分計算</p></section>
+          <section class="summary-card"><h3>変化率</h3><p>小数第2位</p></section>
+          <section class="summary-card"><h3>警告連携</h3><p>F-03 / F-05</p></section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart LR
+    phase2["Phase 2: ログ・例外基盤"] --> phase3["Phase 3: 整形・計算"]
+    phase3 --> summary["short_summary"]
+    phase3 --> market["change / change_rate"]
+    summary --> report["Markdownレポート"]
+    market --> report
+    report --> phase4["Phase 4: RSS/API取得へ"]</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-scope" id="slide-02">
+        <p class="slide-index">02</p>
+        <h2>2. Phase 3 の対象範囲</h2>
+        <div class="phase-boundary">
+          <section class="panel panel-in">
+            <h3>Phase 3 で実装する</h3>
+            <ul class="boundary-list">
+              <li>概要文の空白正規化</li>
+              <li><code>SUMMARY_MAX_LENGTH</code> による文字数制御</li>
+              <li>概要文欠損時の代替表示と警告</li>
+              <li>前日比と変化率の計算</li>
+              <li><code>previous_close == 0</code> の警告継続</li>
+              <li>市況コメント生成と禁止表現回避</li>
+            </ul>
+          </section>
+          <section class="panel panel-out">
+            <h3>Phase 3 では実装しない</h3>
+            <ul class="boundary-list">
+              <li>RSS / API からの外部ニュース取得</li>
+              <li>株価API・為替APIからの実データ取得</li>
+              <li><code>.env</code> によるAPIキー読み込み</li>
+              <li>pytest による網羅的な自動テスト</li>
+              <li>AI要約、本文全文解析、自動翻訳</li>
+              <li>売買判断、推奨、投資助言</li>
+            </ul>
+          </section>
+        </div>
+        <div class="phase3-focus-grid">
+          <section class="focus-card"><strong>基本設計 5.4</strong><p><code>summary</code> から <code>short_summary</code> を生成する。</p></section>
+          <section class="focus-card"><strong>基本設計 5.5</strong><p><code>change</code> と <code>change_rate</code> を追加する。</p></section>
+          <section class="focus-card"><strong>基本設計 8.4</strong><p>市況コメントは中立的な定型文に限定する。</p></section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-03">
+        <p class="slide-index">03</p>
+        <h2>3. ファイル構成と依存関係</h2>
+        <p class="section-note">
+          Phase 3 は新しい取得元を増やさず、既存の取得済みデータを表示向けに変換する層を強化する。
+        </p>
+        <div class="module-lanes">
+          <section class="module-lane">
+            <h3>Entry</h3>
+            <div class="module-stack">
+              <div class="module-node"><strong><code>main.py</code></strong>欠損警告、計算不可警告、ReportData作成</div>
+            </div>
+          </section>
+          <section class="module-lane">
+            <h3>News</h3>
+            <div class="module-stack">
+              <div class="module-node"><strong><code>news/formatter.py</code></strong><code>format_summary()</code> / <code>format_news_items()</code></div>
+            </div>
+          </section>
+          <section class="module-lane">
+            <h3>Market</h3>
+            <div class="module-stack">
+              <div class="module-node"><strong><code>market/calculator.py</code></strong><code>calculate_change()</code> / <code>calculate_market_changes()</code></div>
+            </div>
+          </section>
+          <section class="module-lane">
+            <h3>Report</h3>
+            <div class="module-stack">
+              <div class="module-node"><strong><code>report/generator.py</code></strong>表、コメント、注意事項を生成</div>
+            </div>
+          </section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart TD
+    settings["settings.py / SUMMARY_MAX_LENGTH=120"] --> main["main.py"]
+    fetchNews["news/fetcher.py / NewsItem"] --> main
+    fetchMarket["market/fetcher.py / MarketItem"] --> main
+    main --> formatter["news/formatter.py / short_summary"]
+    main --> calculator["market/calculator.py / change / change_rate"]
+    formatter --> reportData["ReportData"]
+    calculator --> reportData
+    reportData --> generator["report/generator.py"]
+    generator --> markdown["reports/YYYY-MM-DD.md"]
+    main --> logger["utils/logger.py / F-03 / F-05"]</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-04">
+        <p class="slide-index">04</p>
+        <h2>4. ニュース概要文整形</h2>
+        <p class="section-note">
+          原文の <code>summary</code> は保持し、レポート表示用に <code>short_summary</code> を追加する。
+        </p>
+        <div class="transform-board">
+          <section class="sample-box">
+            <h3>入力: <code>summary</code></h3>
+            <p class="sample-text">"国内主要企業の決算発表を受け、
+    投資家の関心が   業績見通しや
+為替影響に向いている。"</p>
+          </section>
+          <div class="transform-arrow">正規化</div>
+          <section class="sample-box">
+            <h3>中間: 空白整理</h3>
+            <p class="sample-text">"国内主要企業の決算発表を受け、 投資家の関心が 業績見通しや 為替影響に向いている。"</p>
+          </section>
+          <div class="transform-arrow">上限適用</div>
+          <section class="sample-box">
+            <h3>出力: <code>short_summary</code></h3>
+            <p class="sample-text">"国内主要企業の決算発表を受け、投資家の関心が業績見通しや為替影響に向いている。"</p>
+          </section>
+        </div>
+        <div class="rule-grid">
+          <section class="rule-card"><strong>改行・タブ</strong><p>半角スペースへ変換する。</p></section>
+          <section class="rule-card"><strong>連続空白</strong><p>1つのスペースへまとめる。</p></section>
+          <section class="rule-card"><strong>空の概要</strong><p><code>概要はありません。</code> を設定する。</p></section>
+          <section class="rule-card"><strong>元データ</strong><p>破壊せず浅いコピーへ <code>short_summary</code> を追加する。</p></section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-05">
+        <p class="slide-index">05</p>
+        <h2>4.4 文字数上限と省略ルール</h2>
+        <p class="section-note">
+          <code>max_length</code> は省略記号を含めた最終文字数の上限とする。Phase 3 の仮置き値は <code>120</code>。
+        </p>
+        <div class="two-col">
+          <section class="panel">
+            <h3>文字数の考え方</h3>
+            <div class="ruler" aria-label="120文字上限の概念図">
+              <span>1</span><span>10</span><span>20</span><span>30</span><span>40</span><span>50</span>
+              <span>60</span><span>70</span><span>80</span><span>90</span><span>117</span><span>...</span>
+            </div>
+            <ul class="compact-list">
+              <li><code>max_length >= 3</code>: 本文を <code>max_length - 3</code> 文字にして <code>...</code> を付ける。</li>
+              <li><code>max_length &lt; 3</code>: <code>.</code> を <code>max_length</code> 個返す。</li>
+              <li><code>max_length &lt;= 0</code>: <code>SummaryFormatError</code> とする。</li>
+            </ul>
+          </section>
+          <section class="panel">
+            <h3>処理分岐</h3>
+            <div class="mermaid-panel">
+              <pre class="mermaid">flowchart TD
+    A["format_summary(summary, max_length)"] --> B{"max_length is valid?"}
+    B -->|No| E["SummaryFormatError"]
+    B -->|Yes| C["空白を正規化"]
+    C --> D{"空文字?"}
+    D -->|Yes| F["概要はありません。"]
+    D -->|No| G{"上限以内?"}
+    G -->|Yes| H["そのまま返す"]
+    G -->|No| I{"max_length >= 3?"}
+    I -->|Yes| J["本文 + ..."]
+    I -->|No| K[". を返す"]</pre>
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-06">
+        <p class="slide-index">06</p>
+        <h2>4.7 概要文欠損時の警告</h2>
+        <p class="section-note">
+          欠損検出は <code>main.py</code> に統一する。<code>formatter.py</code> は代替文を返すだけで、ログや集計を更新しない。
+        </p>
+        <div class="warning-lanes">
+          <section class="panel">
+            <h3>責務分担</h3>
+            <div class="mermaid-panel">
+              <pre class="mermaid">sequenceDiagram
+    participant M as main.py
+    participant F as formatter.py
+    participant R as execution_result.py
+    participant L as logger.py
+
+    M->>M: 整形前の summary を確認
+    alt summary が空
+      M->>R: record_warning(F-03)
+      M->>L: WARNING F-03
+    end
+    M->>F: format_news_items(items, max_length)
+    F-->>M: short_summary 付き list</pre>
+            </div>
+          </section>
+          <section class="panel">
+            <h3>実装方針</h3>
+            <div class="code-preview">
+              <pre><code>for index, item in enumerate(domestic_news):
+    if not str(item.get("summary", "")).strip():
+        record_recoverable_warning(
+            logger,
+            result,
+            "F-03",
+            "news.formatter",
+            f"domestic_news[{index}] の summary が空のため代替文を設定しました",
+        )</code></pre>
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-07">
+        <p class="slide-index">07</p>
+        <h2>5. マーケット変化率計算</h2>
+        <p class="section-note">
+          <code>current_value</code> と <code>previous_close</code> から前日比と変化率を計算し、各マーケット項目へ追加する。
+        </p>
+        <div class="equation-grid">
+          <section class="equation-card">
+            <strong>前日比</strong>
+            <p class="equation">change = current_value - previous_close</p>
+            <p class="number-result">日経平均: 38500.25 - 38200.00 = <code>300.25</code></p>
+          </section>
+          <section class="equation-card">
+            <strong>変化率</strong>
+            <p class="equation">change_rate = change / previous_close * 100</p>
+            <p class="number-result">300.25 / 38200.00 * 100 = <code>0.79</code></p>
+          </section>
+          <section class="equation-card">
+            <strong>丸め</strong>
+            <p class="equation">round(value, 2)</p>
+            <p class="number-result">表示は符号付き小数第2位: <code>+0.79%</code></p>
+          </section>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>指標</th><th>現在値</th><th>前日終値</th><th>前日比</th><th>変化率</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>日経平均</td><td><code>38500.25</code></td><td><code>38200.00</code></td><td><code>300.25</code></td><td><code>0.79</code></td></tr>
+              <tr><td>S&amp;P500</td><td><code>5250.10</code></td><td><code>5200.00</code></td><td><code>50.10</code></td><td><code>0.96</code></td></tr>
+              <tr><td>USD/JPY</td><td><code>155.20</code></td><td><code>154.80</code></td><td><code>0.40</code></td><td><code>0.26</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-08">
+        <p class="slide-index">08</p>
+        <h2>5.3 <code>previous_close</code> の扱い</h2>
+        <p class="section-note">
+          基本設計では任意項目だが、Phase 3 の変化率計算では実質必須項目として扱う。
+        </p>
+        <div class="decision-grid">
+          <section class="decision-card"><strong>欠損</strong><p>計算前提を満たさない。</p><code>MarketCalculationError</code></section>
+          <section class="decision-card"><strong>非数値</strong><p>文字列、<code>None</code>、<code>bool</code> は不可。</p><code>ERROR F-05</code></section>
+          <section class="decision-card"><strong>0</strong><p>割り算できないが、レポートは継続する。</p><code>WARNING F-05</code></section>
+          <section class="decision-card"><strong>数値かつ0以外</strong><p>前日比・変化率を計算する。</p><code>success</code></section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart TD
+    A["previous_close を確認"] --> B{"欠損?"}
+    B -->|Yes| E["MarketCalculationError / exit 1"]
+    B -->|No| C{"数値? bool は除外"}
+    C -->|No| E
+    C -->|Yes| D{"0?"}
+    D -->|Yes| W["change=None / change_rate=None / WARNING F-05"]
+    D -->|No| S["change と change_rate を計算"]</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-09">
+        <p class="slide-index">09</p>
+        <h2>6. レポート表示設計</h2>
+        <div class="two-col">
+          <section class="panel">
+            <h3>ニュース表示</h3>
+            <div class="code-preview">
+              <pre><code>### 1. 国内企業の決算発表を受け、市場に注目が集まる
+- 配信元: Sample JP News
+- 公開日時: 2026-05-19T07:00:00+09:00
+- 概要: 国内主要企業の決算発表を受け、投資家の関心が業績見通しや為替影響に向いている。
+- URL: https://example.com/jp-news-001</code></pre>
+            </div>
+          </section>
+          <section class="panel">
+            <h3>マーケット表</h3>
+            <div class="code-preview">
+              <pre><code>| 指標 | 現在値 | 前日比 | 変化率 |
+| --- | ---: | ---: | ---: |
+| 日経平均 | 38500.25 points | +300.25 | +0.79% |
+| S&amp;P500 | 5250.10 points | +50.10 | +0.96% |
+| USD/JPY | 155.20 yen | +0.40 | +0.26% |</code></pre>
+            </div>
+          </section>
+        </div>
+        <div class="comment-grid">
+          <section class="comment-card"><strong>正</strong><p><code>前日比で上昇傾向です。</code></p></section>
+          <section class="comment-card"><strong>負</strong><p><code>前日比で下落傾向です。</code></p></section>
+          <section class="comment-card"><strong>0</strong><p><code>大きな変動は見られません。</code></p></section>
+          <section class="comment-card"><strong>計算不可</strong><p><code>変化率を計算できませんでした。</code></p></section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-10">
+        <p class="slide-index">10</p>
+        <h2>9. <code>ReportData</code> への反映</h2>
+        <p class="section-note">
+          キー名は <code>news_domestic</code> / <code>news_global</code> に統一する。
+          <code>jp_news</code> / <code>global_news</code> のような別名は使わない。
+        </p>
+        <div class="report-shape">
+          <section class="shape-card">
+            <h3>Phase 3 のキー</h3>
+            <ul class="shape-list">
+              <li><code>generated_at</code><span>レポート生成日時</span></li>
+              <li><code>mode</code><span>Phase 3 では <code>sample</code></span></li>
+              <li><code>news_domestic</code><span>国内ニュース、<code>short_summary</code> 付き</span></li>
+              <li><code>news_global</code><span>海外ニュース、<code>short_summary</code> 付き</span></li>
+              <li><code>markets</code><span><code>change</code> と <code>change_rate</code> 付き</span></li>
+              <li><code>comments</code><span>各マーケットにつき1件の市況コメント</span></li>
+              <li><code>warnings</code><span>継続可能な警告</span></li>
+              <li><code>errors</code><span>通常は空配列</span></li>
+              <li><code>disclaimer</code><span>投資助言ではない旨</span></li>
+            </ul>
+          </section>
+          <section class="shape-card">
+            <h3>データの流れ</h3>
+            <div class="mermaid-panel">
+              <pre class="mermaid">flowchart TD
+    A["news_domestic / news_global"] --> B["short_summary"]
+    C["markets"] --> D["change / change_rate"]
+    D --> E["comments"]
+    B --> R["ReportData"]
+    D --> R
+    E --> R
+    W["warnings"] --> R
+    R --> G["generate_report(report_data)"]</pre>
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-11">
+        <p class="slide-index">11</p>
+        <h2>10. 処理順序</h2>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart TD
+    A["python main.py"] --> B["設定読み込み"]
+    B --> C["ログ初期化"]
+    C --> D["国内ニュースJSON読み込み"]
+    D --> E["海外ニュースJSON読み込み"]
+    E --> F["整形前 summary 欠損確認"]
+    F --> G["format_news_items"]
+    G --> H["マーケットJSON読み込み"]
+    H --> I["calculate_market_changes"]
+    I --> J["change_rate is None を確認"]
+    J --> K["generate_market_comments"]
+    K --> L["ReportData 作成"]
+    L --> M["Markdown生成"]
+    M --> N["reports/YYYY-MM-DD.md 保存"]
+    N --> O["実行結果サマリー"]
+    O --> P["終了コード0"]</pre>
+        </div>
+        <div class="pipeline">
+          <section class="pipeline-step"><span class="step-label">F-01/F-02</span><strong>読み込み</strong><p>国内・海外ニュースを取得済みデータから読む。</p></section>
+          <section class="pipeline-step"><span class="step-label">F-03</span><strong>整形</strong><p>欠損警告後に <code>short_summary</code> を追加する。</p></section>
+          <section class="pipeline-step"><span class="step-label">F-04</span><strong>市況取得</strong><p>サンプルマーケットJSONを読む。</p></section>
+          <section class="pipeline-step"><span class="step-label">F-05</span><strong>計算</strong><p>前日比と変化率を追加する。</p></section>
+          <section class="pipeline-step"><span class="step-label">F-07</span><strong>コメント</strong><p>各指標につき1件生成する。</p></section>
+          <section class="pipeline-step"><span class="step-label">F-08/F-09</span><strong>保存・ログ</strong><p>保存結果と実行サマリーを残す。</p></section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-12">
+        <p class="slide-index">12</p>
+        <h2>8. エラー処理とログ</h2>
+        <div class="warning-lanes">
+          <section class="panel">
+            <h3>継続可能な警告</h3>
+            <ul class="compact-list">
+              <li><code>summary</code> が空: <code>概要はありません。</code> を設定して継続。</li>
+              <li><code>previous_close == 0</code>: <code>N/A</code> を表示して継続。</li>
+              <li>レポート保存まで完了した場合、終了コードは <code>0</code>。</li>
+              <li>実行結果ステータスは <code>warning</code>。</li>
+            </ul>
+          </section>
+          <section class="panel">
+            <h3>停止するエラー</h3>
+            <ul class="compact-list">
+              <li><code>SUMMARY_MAX_LENGTH &lt;= 0</code>: <code>SummaryFormatError</code>。</li>
+              <li>マーケット計算に必要な項目が欠損。</li>
+              <li>価格データが数値ではない。</li>
+              <li>レポート生成時に必須キーが欠損。</li>
+            </ul>
+          </section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">stateDiagram-v2
+    [*] --> Running
+    Running --> Warning: summary empty / previous_close zero
+    Warning --> Saved: 代替値で継続
+    Running --> Failed: SummaryFormatError / MarketCalculationError
+    Saved --> Exit0: status warning or success
+    Failed --> Exit1: status failed
+    Exit0 --> [*]
+    Exit1 --> [*]</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-13">
+        <p class="slide-index">13</p>
+        <h2>11. 関数設計</h2>
+        <div class="function-map">
+          <section class="function-card">
+            <h3><code>main.py</code></h3>
+            <ul>
+              <li><code>build_report_data()</code>: ニュース整形、変化率計算、警告記録、件数集計をまとめる。</li>
+              <li><code>record_recoverable_warning()</code>: 継続可能な警告をログと実行結果に記録する。</li>
+              <li>整形前のニュースから概要文欠損を検出する。</li>
+            </ul>
+          </section>
+          <section class="function-card">
+            <h3><code>news/formatter.py</code></h3>
+            <ul>
+              <li><code>format_summary(summary, max_length)</code>: 空白正規化、空概要代替、文字数上限を適用する。</li>
+              <li><code>format_news_items(items, max_length)</code>: 各ニュースへ <code>short_summary</code> を追加する。</li>
+              <li>警告情報は返さない。</li>
+            </ul>
+          </section>
+          <section class="function-card">
+            <h3><code>market/calculator.py</code></h3>
+            <ul>
+              <li><code>_is_number(value)</code>: <code>bool</code> を除外して数値判定する。</li>
+              <li><code>calculate_change()</code>: 前日比と変化率を返す。</li>
+              <li><code>calculate_market_changes()</code>: 各項目へ計算結果を追加する。</li>
+            </ul>
+          </section>
+          <section class="function-card">
+            <h3><code>report/generator.py</code></h3>
+            <ul>
+              <li><code>generate_news_section()</code>: <code>short_summary</code> を表示する。</li>
+              <li><code>generate_market_section()</code>: <code>change</code> と <code>change_rate</code> を表示する。</li>
+              <li><code>generate_market_comments()</code>: 各マーケットにつき1件のコメントを生成する。</li>
+            </ul>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-14">
+        <p class="slide-index">14</p>
+        <h2>12. 確認観点 / 14. 受け入れ条件</h2>
+        <div class="check-grid">
+          <section class="check-card"><strong>概要文</strong><p>改行、タブ、重複空白が除去され、120文字以内になる。</p></section>
+          <section class="check-card"><strong>欠損概要</strong><p><code>概要はありません。</code> と <code>WARNING F-03</code> を確認する。</p></section>
+          <section class="check-card"><strong>変化率</strong><p>正、負、0、<code>None</code> の境界値を確認する。</p></section>
+          <section class="check-card"><strong><code>previous_close</code></strong><p>欠損はエラー、0は警告で継続する。</p></section>
+          <section class="check-card"><strong>表示</strong><p>前日比と変化率は小数第2位かつ符号付き。</p></section>
+          <section class="check-card"><strong>コメント</strong><p><code>markets</code> の各要素につき1件生成される。</p></section>
+          <section class="check-card"><strong>禁止表現</strong><p>売買推奨・投資助言と誤認される表現を含めない。</p></section>
+          <section class="check-card"><strong>ログ</strong><p><code>INFO F-03</code>、<code>INFO F-05</code>、必要な警告を確認する。</p></section>
+        </div>
+        <div class="acceptance-flow">
+          <section class="check-card"><strong>1. 実行</strong><p><code>python main.py</code></p></section>
+          <section class="check-card"><strong>2. 整形</strong><p><code>short_summary</code></p></section>
+          <section class="check-card"><strong>3. 計算</strong><p><code>change_rate</code></p></section>
+          <section class="check-card"><strong>4. コメント</strong><p><code>comments</code></p></section>
+          <section class="check-card"><strong>5. 保存</strong><p><code>reports/YYYY-MM-DD.md</code></p></section>
+          <section class="check-card"><strong>6. ログ</strong><p><code>logs/app.log</code></p></section>
+        </div>
+      </article>
+
+      <article class="slide" id="slide-15">
+        <p class="slide-index">15</p>
+        <h2>15. 次フェーズで追加するもの</h2>
+        <div class="phase3-roadmap">
+          <section class="next-phase-card">
+            <span class="phase-label">Phase 3 完了</span>
+            <strong>整形・計算の土台</strong>
+            <p>概要文と市況データをレポート表示に適した形へ変換できる。</p>
+          </section>
+          <section class="next-phase-card">
+            <span class="phase-label">Phase 4</span>
+            <strong>RSS/API取得</strong>
+            <p>外部データ取得、<code>.env</code> 読み込み、APIキー未設定時の警告ログを追加する。</p>
+          </section>
+          <section class="next-phase-card">
+            <span class="phase-label">Phase 5</span>
+            <strong>pytest</strong>
+            <p>概要文整形、変化率計算、レポート生成、異常系の自動テストを整備する。</p>
+          </section>
+          <section class="next-phase-card">
+            <span class="phase-label">Phase 6</span>
+            <strong>公開整備</strong>
+            <p>README、<code>.env.example</code>、サンプルレポート、公開前チェックを整える。</p>
+          </section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">timeline
+    title Morning News Detail Design Roadmap
+    Phase 1 : sample_data から Markdown 生成
+    Phase 2 : ログ・エラー処理
+    Phase 3 : 概要文整形・変化率計算
+    Phase 4 : RSS/API取得
+    Phase 5 : pytest
+    Phase 6 : README・公開前チェック</pre>
+        </div>
+      </article>
+    </main>
+
+    <footer class="deck-footer">
+      注: 本ドキュメントはレビュー用HTML。正本はMarkdownを使用する。更新日: 2026-05-23 / 出典: 詳細設計Phase 3.md
+    </footer>
+  </body>
+</html>

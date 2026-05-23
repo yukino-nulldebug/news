@@ -1,0 +1,38 @@
+{
+  "metadata": {
+    "data_type": "edge_sample",
+    "created_for": "phase3 boundary checks",
+    "source_policy": "fictional sample data, not copied from real news articles",
+    "language": "en",
+    "region": "global"
+  },
+  "items": [
+    {
+      "region": "global",
+      "category": "market",
+      "title": "Global sample with an empty summary",
+      "url": "https://example.com/edge-global-news-001",
+      "source": "Sample Edge Global",
+      "published_at": "2026-05-19T08:00:00+09:00",
+      "summary": "   "
+    },
+    {
+      "region": "global",
+      "category": "economy",
+      "title": "Global sample with line breaks and repeated spaces",
+      "url": "https://example.com/edge-global-news-002",
+      "source": "Sample Edge Economy",
+      "published_at": "2026-05-19T08:10:00+09:00",
+      "summary": "Investors watched\ncentral bank comments     and inflation indicators while comparing regional growth expectations across major markets."
+    },
+    {
+      "region": "global",
+      "category": "technology",
+      "title": "Global sample with a long summary",
+      "url": "https://example.com/edge-global-news-003",
+      "source": "Sample Edge Tech",
+      "published_at": "2026-05-19T08:20:00+09:00",
+      "summary": "Technology companies remained in focus as investors evaluated demand for AI infrastructure, cloud services, semiconductor capacity, enterprise software spending, and the ability of suppliers to maintain margins while expanding data center investments."
+    }
+  ]
+}
