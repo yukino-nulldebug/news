@@ -1,10 +1,11 @@
-"""Morning News のサンプルマーケット情報を読み込む。"""
+"""Morning News のマーケット情報を読み込む。"""
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
+from src.market.providers.alpha_vantage import fetch_alpha_vantage_markets
 from src.utils.exceptions import DataLoadError, DataValidationError
 
 REQUIRED_MARKET_FIELDS = ("symbol", "name", "fetched_at")
@@ -83,6 +84,55 @@ def load_market_items(file_path: Path, feature_id: str = FEATURE_ID) -> list[dic
     ]
 
 
-def fetch_sample_markets(settings: dict) -> list[dict]:
-    """フェーズ1用のサンプルマーケット情報を読み込む。"""
-    return load_market_items(settings["market_path"])
+def _warning_entry(feature_id: str, process_name: str, message: str) -> dict:
+    return {
+        "feature_id": feature_id,
+        "process_name": process_name,
+        "message": message,
+    }
+
+
+def _warning_entries(feature_id: str, process_name: str, messages: list[str]) -> list[dict]:
+    return [_warning_entry(feature_id, process_name, message) for message in messages]
+
+
+def fetch_sample_markets(settings) -> list[dict]:
+    """サンプルマーケット情報を読み込む。"""
+    return load_market_items(settings.market_path)
+
+
+def fetch_api_markets(settings) -> tuple[list[dict], list[dict]]:
+    """Providerに応じて外部マーケット情報を取得する。"""
+    if settings.market_provider == "sample":
+        return (
+            fetch_sample_markets(settings),
+            [
+                _warning_entry(
+                    "F-04",
+                    "market.fetcher",
+                    "APP_MODE=api ですが MARKET_PROVIDER=sample のためサンプルマーケットを使用しました",
+                )
+            ],
+        )
+
+    if settings.market_provider == "alpha_vantage":
+        items, warnings = fetch_alpha_vantage_markets(settings)
+        return items, _warning_entries("F-04", "market.alpha_vantage", warnings)
+
+    return (
+        [],
+        [
+            _warning_entry(
+                "F-04",
+                "market.fetcher",
+                f"MARKET_PROVIDER={settings.market_provider} は未対応のためマーケット取得をスキップしました",
+            )
+        ],
+    )
+
+
+def fetch_markets_for_mode(settings) -> tuple[list[dict], list[dict]]:
+    """実行モードに応じてマーケット情報を返す。"""
+    if settings.app_mode == "sample":
+        return fetch_sample_markets(settings), []
+    return fetch_api_markets(settings)

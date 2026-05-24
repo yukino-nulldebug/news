@@ -33,6 +33,14 @@ class DataValidationError(MorningNewsError):
     """JSON必須項目欠損、型不正。"""
 
 
+class ExternalFetchError(MorningNewsError):
+    """外部HTTP取得失敗。"""
+
+
+class ExternalDataError(MorningNewsError):
+    """外部レスポンスの解析・正規化失敗。"""
+
+
 class SummaryFormatError(MorningNewsError):
     """概要文整形失敗。"""
 

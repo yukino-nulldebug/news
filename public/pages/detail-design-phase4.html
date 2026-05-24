@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morning News 詳細設計 Phase 4</title>
+    <link rel="stylesheet" href="../assets/detail-design-phase4.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        if (!window.mermaid) return;
+        window.mermaid.initialize({
+          startOnLoad: true,
+          theme: "base",
+          themeVariables: {
+            background: "#ffffff",
+            primaryColor: "#f2f2f3",
+            primaryTextColor: "#1a1a1c",
+            primaryBorderColor: "#8f9096",
+            lineColor: "#8f9096",
+            secondaryColor: "#ffffff",
+            tertiaryColor: "#f7f7f8",
+            fontFamily: "Noto Sans JP, Hiragino Sans, Yu Gothic, system-ui, sans-serif"
+          }
+        });
+      });
+    </script>
+    <script defer src="../assets/deck-interactions.js"></script>
+  </head>
+  <body>
+    <header class="deck-header">
+      <p class="deck-label">Portfolio Detail Design Deck</p>
+      <h1>Morning News 詳細設計 Phase 4</h1>
+      <ul class="deck-meta">
+        <li>版: draft</li>
+        <li>更新日: 2026-05-24</li>
+        <li>正本: docs/detail-design/詳細設計Phase 4.md</li>
+        <li>対象: RSS/API取得追加</li>
+      </ul>
+      <nav class="deck-nav" aria-label="ドキュメント内ナビゲーション">
+        <a href="../index.html">ドキュメント一覧へ戻る</a>
+        <a href="./detail-design-phase3.html">詳細設計 Phase 3 を見る</a>
+        <a href="./detail-design-phase2.html">詳細設計 Phase 2 を見る</a>
+        <a href="./basic-design.html">基本設計を見る</a>
+        <a href="./requirements.html">要件定義を見る</a>
+      </nav>
+    </header>
+
+    <main class="deck">
+      <article class="slide cover phase4-cover" id="slide-01">
+        <p class="slide-index">01</p>
+        <h2>1. 詳細設計の目的</h2>
+        <p class="lead">
+          Phase 4 は、Phase 3 までの <code>sample_data → 整形 → 計算 → Markdown生成</code> に、
+          <code>APP_MODE=api</code> の外部データ取得を接続するフェーズである。
+        </p>
+        <div class="summary-grid">
+          <section class="summary-card"><h3>.env</h3><p>設定読み込み</p></section>
+          <section class="summary-card"><h3>RSS</h3><p>必須Provider</p></section>
+          <section class="summary-card"><h3>News API</h3><p>未対応スタブ</p></section>
+          <section class="summary-card"><h3>Market API</h3><p>最低1指標</p></section>
+          <section class="summary-card"><h3>HTTP</h3><p>共通化</p></section>
+          <section class="summary-card"><h3>Security</h3><p>キー非出力</p></section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart LR
+    phase3["Phase 3: 整形・計算"] --> phase4["Phase 4: 外部取得"]
+    phase4 --> settings["Settings dataclass"]
+    phase4 --> rss["RSS Provider"]
+    phase4 --> market["Market Provider"]
+    rss --> normalize["NewsItem"]
+    market --> marketItem["MarketItem"]
+    normalize --> report["既存レポート生成"]
+    marketItem --> report</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-02">
+        <p class="slide-index">02</p>
+        <h2>2. 対象範囲</h2>
+        <div class="phase-boundary">
+          <section class="panel panel-in">
+            <h3>Phase 4 で実装する</h3>
+            <ul class="boundary-list">
+              <li><code>Settings</code> dataclass と属性アクセス</li>
+              <li><code>.env</code> / 環境変数の読み込み</li>
+              <li><code>APP_MODE=sample/api</code> の分岐</li>
+              <li>RSSニュース取得と <code>NewsItem</code> 正規化</li>
+              <li>HTTP共通処理、タイムアウト、リトライ</li>
+              <li>マーケットAPI Providerの最小実装</li>
+              <li>APIキー未設定時の警告とログ</li>
+            </ul>
+          </section>
+          <section class="panel panel-out">
+            <h3>Phase 4 では実装しない</h3>
+            <ul class="boundary-list">
+              <li>ニュースAPIの実接続</li>
+              <li>3指標すべての安定取得保証</li>
+              <li>pytestの網羅的な自動テスト</li>
+              <li>定時実行、通知、Web UI</li>
+              <li>本文全文取得、AI要約、翻訳</li>
+              <li>自動売買・投資助言</li>
+            </ul>
+          </section>
+        </div>
+        <div class="split-note">
+          <section class="risk-card"><strong>必須</strong><p>RSS Providerで外部ニュースを取得し、既存の整形処理へ渡せること。</p></section>
+          <section class="risk-card"><strong>任意・後続</strong><p>News API実接続、フィード単位カテゴリ、フィード単位タイムゾーン設定。</p></section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-03">
+        <p class="slide-index">03</p>
+        <h2>3. モード分岐の考え方</h2>
+        <p class="section-note">
+          <code>sample</code> はAPIキーなしの確認用として維持し、<code>api</code> は外部取得の成否を明確に扱う。
+        </p>
+        <div class="mode-split">
+          <section class="panel">
+            <h3><code>APP_MODE=sample</code></h3>
+            <ul class="compact-list">
+              <li><code>.env</code> がなくても起動する。</li>
+              <li><code>sample_data/news_jp.json</code> を読む。</li>
+              <li><code>sample_data/news_global.json</code> を読む。</li>
+              <li><code>sample_data/market.json</code> を読む。</li>
+            </ul>
+          </section>
+          <div class="mode-switcher">APP_MODE</div>
+          <section class="panel">
+            <h3><code>APP_MODE=api</code></h3>
+            <ul class="compact-list">
+              <li>RSSからニュースを取得する。</li>
+              <li>マーケットAPIから取得できる指標を読む。</li>
+              <li>失敗時にsampleへ自動フォールバックしない。</li>
+              <li>全データ取得失敗なら終了コード <code>2</code>。</li>
+            </ul>
+          </section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart TD
+    A["load_settings"] --> B{"APP_MODE"}
+    B -->|未設定 / sample| S["sample_data を読む"]
+    B -->|api| API["RSS / Market API を読む"]
+    B -->|不正値| F["WARNING F-10 / sampleへフォールバック"]
+    API --> C{"1件以上取得?"}
+    C -->|Yes| R["ReportData 作成"]
+    C -->|No| E["ERROR F-09 / exit 2"]
+    S --> R
+    F --> S</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-04">
+        <p class="slide-index">04</p>
+        <h2>4. APIモードの処理フロー</h2>
+        <p class="section-note">
+          下のステップはJavaScriptで順番にハイライトされる。スライダーでも確認できる。
+        </p>
+        <div class="scrubber-panel">
+          <div class="flow-rail" id="phase4-main-flow">
+            <section class="flow-step"><span class="step-label">1</span><strong>Settings</strong><p><code>.env</code> と環境変数から設定を作る。</p></section>
+            <section class="flow-step"><span class="step-label">2</span><strong>RSS News</strong><p>国内・海外RSSを取得して正規化する。</p></section>
+            <section class="flow-step"><span class="step-label">3</span><strong>Market API</strong><p>取得できる指標を <code>MarketItem</code> にする。</p></section>
+            <section class="flow-step"><span class="step-label">4</span><strong>Format / Calc</strong><p>Phase 3 の整形・変化率計算を通す。</p></section>
+            <section class="flow-step"><span class="step-label">5</span><strong>ReportData</strong><p>警告、コメント、注意事項をまとめる。</p></section>
+            <section class="flow-step"><span class="step-label">6</span><strong>Markdown</strong><p>保存し、実行結果サマリーをログへ出す。</p></section>
+          </div>
+          <div class="flow-control">
+            <label for="phase4-main-control">ステップ確認</label>
+            <input id="phase4-main-control" type="range" data-step-control="phase4-main-flow" aria-label="Phase 4処理ステップ">
+          </div>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart TD
+    A["python main.py"] --> B["load_settings / Settings"]
+    B --> C["settings_warnings を WARNING F-10"]
+    C --> D{"APP_MODE"}
+    D -->|sample| S1["sample news"]
+    D -->|sample| S2["sample market"]
+    D -->|api| A1["RSSニュース取得 / Provider警告"]
+    D -->|api| A2["マーケットAPI取得"]
+    S1 --> N["format_news_items"]
+    A1 --> N
+    S2 --> M["calculate_market_changes"]
+    A2 --> M
+    N --> R["ReportData"]
+    M --> CMT["generate_market_comments"]
+    CMT --> R
+    R --> MD["Markdown生成・保存"]</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-05">
+        <p class="slide-index">05</p>
+        <h2>5. ファイル構成</h2>
+        <p class="section-note">
+          Providerを分離し、HTTP取得は <code>utils/http_client.py</code> に集約する。
+        </p>
+        <div class="phase4-map">
+          <section class="phase4-column">
+            <h3>Config / Utils</h3>
+            <div class="module-stack">
+              <div class="module-node"><strong><code>settings.py</code></strong><code>Settings</code> dataclass、環境変数、警告</div>
+              <div class="module-node"><strong><code>http_client.py</code></strong>GET、リトライ、URLマスク</div>
+              <div class="module-node"><strong><code>exceptions.py</code></strong><code>ExternalFetchError</code> / <code>ExternalDataError</code></div>
+            </div>
+          </section>
+          <section class="phase4-column">
+            <h3>News</h3>
+            <div class="module-stack">
+              <div class="module-node"><strong><code>news/fetcher.py</code></strong>modeに応じてsample/apiを選択</div>
+              <div class="module-node"><strong><code>news/providers/rss.py</code></strong>RSS取得、解析、正規化</div>
+              <div class="module-node"><strong><code>news/providers/newsapi.py</code></strong>未対応Providerスタブ</div>
+            </div>
+          </section>
+          <section class="phase4-column">
+            <h3>Market / Report</h3>
+            <div class="module-stack">
+              <div class="module-node"><strong><code>market/fetcher.py</code></strong>market Providerを選択</div>
+              <div class="module-node"><strong><code>market/providers/alpha_vantage.py</code></strong>取得できる指標を正規化</div>
+              <div class="module-node"><strong><code>report/generator.py</code></strong>既存Markdown生成を再利用</div>
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-06">
+        <p class="slide-index">06</p>
+        <h2>6. <code>Settings</code> dataclass</h2>
+        <p class="section-note">
+          Phase 4 から設定値は辞書ではなくdataclassで扱う。参照は <code>settings.app_mode</code> に統一する。
+        </p>
+        <div class="settings-shape">
+          <section class="dataclass-box">
+            <h3>主要フィールド</h3>
+            <ul class="field-list">
+              <li><code>app_mode</code><span><code>sample</code> / <code>api</code></span></li>
+              <li><code>news_provider</code><span>Phase 4標準は <code>rss</code></span></li>
+              <li><code>news_jp_rss_urls</code><span>国内RSS URLのtuple</span></li>
+              <li><code>market_provider</code><span><code>alpha_vantage</code></span></li>
+              <li><code>market_targets</code><span><code>MarketTarget</code> のtuple</span></li>
+              <li><code>settings_warnings</code><span>ログ初期化後に記録する警告</span></li>
+            </ul>
+          </section>
+          <section class="panel">
+            <h3>設定読み込みの流れ</h3>
+            <div class="mermaid-panel">
+              <pre class="mermaid">flowchart TD
+    A[".env があれば python-dotenv"] --> B["OS環境変数を優先"]
+    B --> C["空文字は未設定"]
+    C --> D["数値設定を検証"]
+    D --> E{"不正?"}
+    E -->|警告で継続| W["settings_warnings"]
+    E -->|継続不可| X["ConfigError"]
+    W --> S["Settings dataclass"]
+    E -->|OK| S</pre>
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-07">
+        <p class="slide-index">07</p>
+        <h2>7. HTTP共通処理</h2>
+        <p class="section-note">
+          Providerは <code>requests.get()</code> を直接呼ばない。通信ルールとマスクを共通化する。
+        </p>
+        <div class="api-path" id="http-flow">
+          <section class="api-node"><strong>Provider</strong><p>RSS / Market ProviderがHTTP取得を依頼する。</p></section>
+          <section class="api-node"><strong>get_text / get_json</strong><p>GETのみ。User-Agentを付ける。</p></section>
+          <section class="api-node"><strong>Retry</strong><p>timeout、429、5xx は指定回数まで再試行。</p></section>
+          <section class="api-node"><strong>Parse</strong><p>TextまたはJSONを返す。</p></section>
+          <section class="api-node"><strong>Mask</strong><p>ログ用URLは <code>apikey=***</code> にする。</p></section>
+        </div>
+        <div class="mini-terminal">
+          <code><span class="log-line">ERROR F-04 market.alpha_vantage 外部取得に失敗しました:</span>
+<span class="masked-url">https://www.alphavantage.co/query?function=GLOBAL_QUOTE&amp;symbol=SPY&amp;apikey=***</span></code>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-08">
+        <p class="slide-index">08</p>
+        <h2>8. RSSニュース取得</h2>
+        <p class="section-note">
+          Phase 4 のニュース取得の必須実装はRSS Provider。News APIは未対応Providerスタブに留める。
+        </p>
+        <div class="provider-grid">
+          <section class="provider-card"><h3>1. URL確認</h3><p>RSS URLが空ならニュース0件と警告を返す。</p></section>
+          <section class="provider-card"><h3>2. 取得</h3><p><code>get_text()</code> でRSS/Atom本文を取得する。</p></section>
+          <section class="provider-card"><h3>3. 解析</h3><p><code>feedparser.parse()</code> を使い、<code>bozo</code> 警告でもentriesがあれば継続する。</p></section>
+          <section class="provider-card"><h3>4. 正規化</h3><p><code>title</code>、<code>url</code>、<code>source</code>、<code>published_at</code>、<code>summary</code> を作る。</p></section>
+          <section class="provider-card"><h3>5. 整理</h3><p>URL重複を除外し、公開日時の新しい順に並べる。</p></section>
+          <section class="provider-card"><h3>6. 制限</h3><p><code>NEWS_LIMIT</code> 件に切り詰める。</p></section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart LR
+    rss["RSS URL"] --> text["get_text"]
+    text --> parse["feedparser.parse"]
+    parse --> entries["entries"]
+    entries --> normalize["NewsItem"]
+    normalize --> dedupe["URL重複排除"]
+    dedupe --> sort["published_at desc"]
+    sort --> limit["NEWS_LIMIT"]
+    limit --> formatter["format_news_items"]</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-09">
+        <p class="slide-index">09</p>
+        <h2>8.2 <code>NewsItem</code> 正規化</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>内部項目</th><th>RSS入力</th><th>Phase 4 の扱い</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>region</code></td><td>呼び出し引数</td><td><code>domestic</code> または <code>global</code></td></tr>
+              <tr><td><code>category</code></td><td>固定値</td><td>Phase 4では <code>general</code></td></tr>
+              <tr><td><code>title</code></td><td><code>entry.title</code></td><td>欠損時はentryをスキップ</td></tr>
+              <tr><td><code>url</code></td><td><code>entry.link</code></td><td>欠損時はentryをスキップ</td></tr>
+              <tr><td><code>source</code></td><td>feed title</td><td>欠損時はURLホスト名</td></tr>
+              <tr><td><code>published_at</code></td><td>published / updated</td><td>JST文字列。欠損時は取得時刻</td></tr>
+              <tr><td><code>summary</code></td><td>summary / description</td><td>HTMLタグと重複空白を除去</td></tr>
+              <tr><td><code>short_summary</code></td><td>生成</td><td>Phase 3 の整形処理で追加</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="split-note">
+          <section class="risk-card"><strong>タイムゾーンなし日時</strong><p>MVPではUTC扱いでJSTへ変換する。後続でフィード単位のタイムゾーン設定を検討する。</p></section>
+          <section class="risk-card"><strong>カテゴリ</strong><p>Phase 4では <code>general</code> 固定。後続でフィードごとのカテゴリ設定を検討する。</p></section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-10">
+        <p class="slide-index">10</p>
+        <h2>8.4 News API Providerの扱い</h2>
+        <p class="section-note">
+          実装で迷わないよう、Phase 4ではニュースAPIの実通信は行わないと明記する。
+        </p>
+        <div class="mode-split">
+          <section class="panel">
+            <h3><code>NEWS_PROVIDER=rss</code></h3>
+            <p>Phase 4 の必須Provider。RSS/Atomを取得し、<code>NewsItem</code> へ正規化する。</p>
+            <p><span class="status-pill">実装対象</span></p>
+          </section>
+          <div class="mode-switcher">NEWS_PROVIDER</div>
+          <section class="panel warning-path">
+            <h3><code>NEWS_PROVIDER=newsapi</code></h3>
+            <p>未対応Providerスタブ。通信せず、警告とニュース0件を返す。</p>
+            <p><span class="status-pill">後続任意</span></p>
+          </section>
+        </div>
+        <div class="code-preview">
+          <pre><code>NEWS_PROVIDER=newsapi は Phase 4 では未対応のため RSS Provider を使用してください。</code></pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-11">
+        <p class="slide-index">11</p>
+        <h2>9. マーケットAPI取得</h2>
+        <p class="section-note">
+          Phase 4 はProvider構造と最低1指標の外部取得確認を目標にする。3指標すべての安定取得は必須にしない。
+        </p>
+        <div class="target-grid">
+          <section class="target-card"><strong>日経平均</strong><p><code>NIKKEI225</code>。Providerシンボルが空ならスキップして警告。</p></section>
+          <section class="target-card"><strong>S&amp;P500</strong><p><code>SP500</code>。ProviderシンボルはAPIに合わせて <code>.env</code> で指定。</p></section>
+          <section class="target-card"><strong>USD/JPY</strong><p><code>USDJPY</code>。<code>base=USD</code>、<code>quote=JPY</code>。</p></section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart TD
+    A["fetch_api_markets"] --> B{"MARKET_API_KEY exists?"}
+    B -->|No| W["WARNING F-04 / 空配列"]
+    B -->|Yes| C["market_targets を順に処理"]
+    C --> D{"provider_symbol / fx設定あり?"}
+    D -->|No| S["該当指標をスキップ"]
+    D -->|Yes| E["Alpha Vantage Provider"]
+    E --> F{"current / previous 取得?"}
+    F -->|Yes| M["MarketItem"]
+    F -->|No| S
+    M --> G["calculate_market_changes"]</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-12">
+        <p class="slide-index">12</p>
+        <h2>10. 部分失敗と終了コード</h2>
+        <div class="risk-grid">
+          <section class="risk-card"><strong>RSS 1件失敗</strong><p>他RSSを継続。<code>WARNING F-01/F-02</code>。</p></section>
+          <section class="risk-card"><strong>ニュース全滅</strong><p>マーケットがあればレポート継続。</p></section>
+          <section class="risk-card"><strong>マーケット全滅</strong><p>ニュースがあればレポート継続。</p></section>
+          <section class="risk-card stop-path"><strong>全データ全滅</strong><p>保存せず <code>ERROR F-09</code>、終了コード <code>2</code>。</p></section>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>終了コード</th><th>条件</th><th>レポート保存</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>0</code></td><td>正常終了、または警告ありで保存完了</td><td>あり</td></tr>
+              <tr><td><code>1</code></td><td>設定不備、整形・計算・生成・保存の継続不可エラー</td><td>原則なし</td></tr>
+              <tr><td><code>2</code></td><td><code>sample</code> 必須データ失敗、または <code>api</code> 外部データ全取得失敗</td><td>なし</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-13">
+        <p class="slide-index">13</p>
+        <h2>11. セキュリティとログ</h2>
+        <div class="security-grid">
+          <section class="security-card"><h3>出さない</h3><p>APIキー、認証ヘッダー、<code>.env</code> 全文、レスポンス全文。</p></section>
+          <section class="security-card"><h3>マスクする</h3><p><code>apikey</code>、<code>api_key</code>、<code>token</code>、<code>access_token</code>。</p></section>
+          <section class="security-card"><h3>残す</h3><p>機能ID、処理名、件数、対象ID、HTTPステータス、短い失敗理由。</p></section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">sequenceDiagram
+    participant P as Provider
+    participant H as http_client
+    participant L as logger
+    P->>H: URL + params + API key
+    H-->>P: data or ExternalFetchError
+    P->>H: sanitize_url(url)
+    H-->>P: masked URL
+    P->>L: WARNING with masked URL</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-14">
+        <p class="slide-index">14</p>
+        <h2>12. 実装順序</h2>
+        <p class="section-note">
+          壊れにくい順番で、設定、RSS、sample回帰、マーケット、セキュリティ確認へ進める。
+        </p>
+        <div class="flow-rail" id="implementation-flow">
+          <section class="flow-step"><span class="step-label">1</span><strong>Settings</strong><p>dataclass化し、属性アクセスへ統一。</p></section>
+          <section class="flow-step"><span class="step-label">2</span><strong>.env / deps</strong><p><code>.env.example</code> と依存関係を追加。</p></section>
+          <section class="flow-step"><span class="step-label">3</span><strong>HTTP</strong><p>共通GET、リトライ、マスク。</p></section>
+          <section class="flow-step"><span class="step-label">4</span><strong>RSS</strong><p>RSS Providerでニュース取得。</p></section>
+          <section class="flow-step"><span class="step-label">5</span><strong>回帰</strong><p><code>APP_MODE=sample</code> が壊れていないか確認。</p></section>
+          <section class="flow-step"><span class="step-label">6</span><strong>Market</strong><p>最低1指標を正規化し、キー非出力を確認。</p></section>
+        </div>
+        <div class="flow-control">
+          <label for="implementation-control">実装順序</label>
+          <input id="implementation-control" type="range" data-step-control="implementation-flow" aria-label="Phase 4実装手順">
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-15">
+        <p class="slide-index">15</p>
+        <h2>13. 受け入れ条件</h2>
+        <div class="check-grid">
+          <section class="check-card"><strong>Settings</strong><p><code>load_settings()</code> は <code>Settings</code> を返す。</p></section>
+          <section class="check-card"><strong>sample</strong><p><code>.env</code> なしでも既存レポート生成が動く。</p></section>
+          <section class="check-card"><strong>RSS</strong><p>RSSから <code>NewsItem</code> を生成できる。</p></section>
+          <section class="check-card"><strong>newsapi</strong><p>未対応警告を出し、通信しない。</p></section>
+          <section class="check-card"><strong>Market</strong><p>最低1指標を <code>MarketItem</code> に正規化できる。</p></section>
+          <section class="check-card"><strong>既存処理</strong><p><code>short_summary</code>、<code>change</code>、<code>change_rate</code> が生成される。</p></section>
+          <section class="check-card"><strong>部分失敗</strong><p>1件以上取得できれば警告付きで保存まで進む。</p></section>
+          <section class="check-card"><strong>全滅</strong><p><code>APP_MODE=api</code> 全取得失敗は終了コード <code>2</code>。</p></section>
+        </div>
+      </article>
+
+      <article class="slide" id="slide-16">
+        <p class="slide-index">16</p>
+        <h2>14. 次フェーズで追加するもの</h2>
+        <div class="phase3-roadmap">
+          <section class="next-phase-card">
+            <span class="phase-label">Phase 4</span>
+            <strong>RSS / APIモード</strong>
+            <p>外部取得経路、設定、HTTP共通化、警告継続を追加する。</p>
+          </section>
+          <section class="next-phase-card">
+            <span class="phase-label">Phase 5</span>
+            <strong>pytest</strong>
+            <p>Providerのモック、sample/api結合、異常系を自動テストにする。</p>
+          </section>
+          <section class="next-phase-card">
+            <span class="phase-label">Phase 6</span>
+            <strong>公開整備</strong>
+            <p>README、サンプルレポート、公開前チェックを整える。</p>
+          </section>
+          <section class="next-phase-card">
+            <span class="phase-label">後続任意</span>
+            <strong>取得元拡張</strong>
+            <p>News API実接続、フィード別カテゴリ、フィード別タイムゾーン、ログローテーション。</p>
+          </section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">timeline
+    title Morning News Roadmap
+    Phase 1 : sample_data から Markdown生成
+    Phase 2 : ログ・例外・終了コード
+    Phase 3 : 概要文整形・変化率計算
+    Phase 4 : RSS取得・APIモード
+    Phase 5 : pytest
+    Phase 6 : README・公開準備</pre>
+        </div>
+      </article>
+    </main>
+
+    <footer class="deck-footer">
+      注: 本ドキュメントはレビュー用HTML。正本はMarkdownを使用する。更新日: 2026-05-24 / 出典: 詳細設計Phase 4.md
+    </footer>
+  </body>
+</html>
