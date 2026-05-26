@@ -1,0 +1,91 @@
+# Morning News Report
+作成日時: 2026-05-26 09:30 JST
+実行モード: sample
+
+## 1. 今日の注目ポイント
+
+- 国内: 国内企業の決算発表を受け、市場に注目が集まる
+- 海外: US technology stocks move higher as AI demand remains in focus
+- 市況: 日経平均は前日比 +0.79%
+
+## 2. 国内ニュース
+
+### 1. 国内企業の決算発表を受け、市場に注目が集まる
+- 配信元: Sample JP News
+- 公開日時: 2026-05-19T07:00:00+09:00
+- 概要: 国内主要企業の決算発表を受け、投資家の関心が業績見通しや為替影響に向いている。
+- URL: https://example.com/jp-news-001
+
+### 2. 日経平均は前営業日の流れを受けて方向感を探る展開
+- 配信元: Sample Market JP
+- 公開日時: 2026-05-19T07:10:00+09:00
+- 概要: 前日の米国市場や為替動向を受け、日本市場では輸出関連株や半導体関連株の動きが注目されている。
+- URL: https://example.com/jp-news-002
+
+### 3. AI関連サービスの導入拡大で国内IT企業に関心
+- 配信元: Sample Tech JP
+- 公開日時: 2026-05-19T07:20:00+09:00
+- 概要: 企業の業務効率化需要を背景に、AI関連サービスを提供する国内IT企業への関心が高まっている。
+- URL: https://example.com/jp-news-003
+
+### 4. 政府の経済対策案を受け、関連業界の動向に関心
+- 配信元: Sample Policy JP
+- 公開日時: 2026-05-19T07:30:00+09:00
+- 概要: 政府の経済対策案を受け、家計支援や企業投資に関連する業界の動向が市場関係者の注目を集めている。
+- URL: https://example.com/jp-news-004
+
+### 5. 国内小売企業、訪日需要回復を背景に販売計画を見直し
+- 配信元: Sample Retail JP
+- 公開日時: 2026-05-19T07:40:00+09:00
+- 概要: 訪日需要の回復や都市部店舗の客足増加を背景に、国内小売企業では在庫計画や販売促進策を見直す動きが出ている。
+- URL: https://example.com/jp-news-005
+
+## 3. 海外ニュース
+
+### 1. US technology stocks move higher as AI demand remains in focus
+- 配信元: Sample Global News
+- 公開日時: 2026-05-19T07:00:00+09:00
+- 概要: Major technology stocks gained attention as investors continued to focus on demand for AI infrastructure and semicond...
+- URL: https://example.com/global-news-001
+
+### 2. Currency markets watch interest rate expectations and dollar movement
+- 配信元: Sample FX News
+- 公開日時: 2026-05-19T07:15:00+09:00
+- 概要: Foreign exchange markets remained focused on interest rate expectations, with USD/JPY movements influencing market se...
+- URL: https://example.com/global-news-002
+
+### 3. Global markets react to inflation data and central bank comments
+- 配信元: Sample Economy News
+- 公開日時: 2026-05-19T07:25:00+09:00
+- 概要: Investors monitored inflation data and central bank comments to assess the outlook for rates and global equity markets.
+- URL: https://example.com/global-news-003
+
+### 4. European markets monitor energy prices and policy outlook
+- 配信元: Sample Europe News
+- 公開日時: 2026-05-19T07:35:00+09:00
+- 概要: European markets watched energy price movements and policy discussions as investors evaluated cost pressures across m...
+- URL: https://example.com/global-news-004
+
+### 5. Asian equities trade mixed as investors assess regional earnings
+- 配信元: Sample Asia News
+- 公開日時: 2026-05-19T07:45:00+09:00
+- 概要: Asian equity markets showed mixed movement as investors reviewed regional corporate earnings, currency trends, and de...
+- URL: https://example.com/global-news-005
+
+## 4. マーケット情報
+
+| 指標 | 現在値 | 前日比 | 変化率 | 取得日時 |
+| --- | ---: | ---: | ---: | --- |
+| 日経平均 | 38500.25 points | +300.25 | +0.79% | 2026-05-19T07:00:00+09:00 |
+| S&P500 | 5250.10 points | +50.10 | +0.96% | 2026-05-19T07:00:00+09:00 |
+| USD/JPY | 155.20 yen | +0.40 | +0.26% | 2026-05-19T07:00:00+09:00 |
+
+## 5. 市況コメント
+
+- 日経平均は前日比で上昇傾向です。
+- S&P500は前日比で上昇傾向です。
+- USD/JPYは前日比で上昇傾向です。
+
+## 6. 注意事項
+
+本レポートは情報提供を目的としており、投資助言ではありません。

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morning News 詳細設計 Phase 6</title>
+    <link rel="stylesheet" href="../assets/detail-design-phase6.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        if (!window.mermaid) return;
+        window.mermaid.initialize({
+          startOnLoad: true,
+          theme: "base",
+          themeVariables: {
+            background: "#ffffff",
+            primaryColor: "#f2f2f3",
+            primaryTextColor: "#1a1a1c",
+            primaryBorderColor: "#8f9096",
+            lineColor: "#8f9096",
+            secondaryColor: "#ffffff",
+            tertiaryColor: "#f7f7f8",
+            fontFamily: "Noto Sans JP, Hiragino Sans, Yu Gothic, system-ui, sans-serif"
+          }
+        });
+      });
+    </script>
+    <script defer src="../assets/deck-interactions.js"></script>
+  </head>
+  <body>
+    <header class="deck-header">
+      <p class="deck-label">Portfolio Detail Design Deck</p>
+      <h1>Morning News 詳細設計 Phase 6</h1>
+      <ul class="deck-meta">
+        <li>版: draft</li>
+        <li>更新日: 2026-05-26</li>
+        <li>正本: docs/detail-design/詳細設計Phase 6.md</li>
+        <li>対象: README・サンプルレポート整備</li>
+      </ul>
+      <nav class="deck-nav" aria-label="ドキュメント内ナビゲーション">
+        <a href="../index.html">ドキュメント一覧へ戻る</a>
+        <a href="./detail-design-phase5.html">詳細設計 Phase 5 を見る</a>
+        <a href="./detail-design-phase4.html">詳細設計 Phase 4 を見る</a>
+        <a href="./basic-design.html">基本設計を見る</a>
+        <a href="./requirements.html">要件定義を見る</a>
+      </nav>
+    </header>
+
+    <main class="deck">
+      <article class="slide cover phase6-cover" id="slide-01">
+        <p class="slide-index">01</p>
+        <h2>1. 詳細設計の目的</h2>
+        <p class="lead">
+          Phase 6 は、実装済み機能を第三者が迷わず確認できる公開リポジトリ状態へ仕上げる。
+          APIキーなしで sample 実行、出力確認、pytest 実行まで完了できることを重視する。
+        </p>
+        <div class="summary-grid">
+          <section class="summary-card"><h3>README</h3><p>手順整備</p></section>
+          <section class="summary-card"><h3>.env.example</h3><p>安全な設定例</p></section>
+          <section class="summary-card"><h3>Sample Report</h3><p>出力例</p></section>
+          <section class="summary-card"><h3>.gitignore</h3><p>機密除外</p></section>
+          <section class="summary-card"><h3>Checks</h3><p>公開前確認</p></section>
+          <section class="summary-card"><h3>Portfolio</h3><p>導線整備</p></section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart LR
+    phase5["Phase 5: pytest"] --> phase6["Phase 6: public readiness"]
+    phase6 --> readme["README.md"]
+    phase6 --> env[".env.example"]
+    phase6 --> report["reports/sample-report.md"]
+    phase6 --> ignore[".gitignore"]
+    phase6 --> checks["pre-publish checks"]
+    checks --> public["公開可能な状態"]</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-02">
+        <p class="slide-index">02</p>
+        <h2>2. Phase 6 の対象範囲</h2>
+        <div class="phase-boundary">
+          <section class="panel panel-in">
+            <h3>Phase 6 で実装する</h3>
+            <ul class="boundary-list">
+              <li>READMEに概要、機能、セットアップ、sample実行、api実行（任意）を記載する。</li>
+              <li><code>.env.example</code> に公開可能な環境変数を整理する。</li>
+              <li><code>reports/sample-report.md</code> を固定の出力例として整備する。</li>
+              <li><code>.gitignore</code> で機密情報、ログ、生成物を除外する。</li>
+              <li>公開前チェックとREADMEコマンド検証を定義する。</li>
+              <li>設計ドキュメント、テスト、サンプル出力への導線を用意する。</li>
+            </ul>
+          </section>
+          <section class="panel panel-out">
+            <h3>Phase 6 では実装しない</h3>
+            <ul class="boundary-list">
+              <li>新しいニュースProviderの追加</li>
+              <li>実APIキー付きのデモ公開</li>
+              <li>定時実行の本体実装</li>
+              <li>GitHub Actions必須化</li>
+              <li>Web UI、通知、AI要約</li>
+              <li>投資助言・売買判断</li>
+            </ul>
+          </section>
+        </div>
+        <div class="publish-grid">
+          <section class="publish-card"><h3>標準確認</h3><p>ポートフォリオ確認では <code>sample</code> モードを推奨する。</p></section>
+          <section class="publish-card"><h3>任意確認</h3><p><code>api</code> モードはAPIキーや外部サービス状態で結果が変わる。</p></section>
+          <section class="publish-card"><h3>安全性</h3><p><code>.env</code>、APIキー、個人URL、有料記事本文を公開しない。</p></section>
+          <section class="publish-card"><h3>再現性</h3><p>第三者がAPIキーなしでセットアップから出力確認まで進める。</p></section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-03">
+        <p class="slide-index">03</p>
+        <h2>3. README構成</h2>
+        <p class="section-note">
+          READMEは日本語を基本にし、コマンド、環境変数、ファイル名は実装と同じ識別子を使う。
+        </p>
+        <div class="readme-outline">
+          <section class="readme-card"><h3>最初に伝える</h3><p>概要、主な機能、APIキーなしで動く <code>sample</code> モード。</p></section>
+          <section class="readme-card"><h3>実行できる</h3><p>必要環境、セットアップ、sample実行、api実行（任意）、pytest実行。</p></section>
+          <section class="readme-card"><h3>確認できる</h3><p>出力レポート、ログ、サンプルデータ、設計ドキュメントへの導線。</p></section>
+        </div>
+        <div class="code-preview">
+          <pre><code># Morning News
+## 概要
+## 主な機能
+## ディレクトリ構成
+## 必要環境
+## セットアップ
+## sampleモードで実行する
+## apiモード（任意）でRSSニュースを取得する
+## Alpha Vantage（任意）でマーケット情報を取得する
+## テストを実行する
+## 出力されるレポート
+## ログ
+## 環境変数
+## サンプルデータ
+## 注意事項
+## 設計ドキュメント</code></pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-04">
+        <p class="slide-index">04</p>
+        <h2>4. セットアップと実行手順</h2>
+        <div class="flow-rail readme-sequence" id="readme-sequence">
+          <section class="flow-step"><span class="step-label">1</span><strong>Clone / cd</strong><p><code>cd morning-news</code></p></section>
+          <section class="flow-step"><span class="step-label">2</span><strong>venv</strong><p><code>python3 -m venv .venv</code></p></section>
+          <section class="flow-step"><span class="step-label">3</span><strong>Install</strong><p><code>python3 -m pip install -r requirements.txt</code></p></section>
+          <section class="flow-step"><span class="step-label">4</span><strong>sample</strong><p><code>APP_MODE=sample python3 main.py</code></p></section>
+          <section class="flow-step"><span class="step-label">5</span><strong>pytest</strong><p><code>python3 -m pytest</code></p></section>
+        </div>
+        <div class="flow-control">
+          <label for="readme-sequence-control">README手順</label>
+          <input id="readme-sequence-control" type="range" data-step-control="readme-sequence" aria-label="README実行手順">
+        </div>
+        <div class="phase-split">
+          <section class="split-card">
+            <h3>sampleモード</h3>
+            <p>APIキーなしで最初に確認する標準手順。<code>reports/YYYY-MM-DD.md</code> と <code>logs/app.log</code> が作成される。</p>
+          </section>
+          <section class="split-card safe-box">
+            <h3>apiモード（任意）</h3>
+            <p>APIキーやRSS、外部サービス状態により取得結果が変わる。ポートフォリオ確認では sample モードを推奨する。</p>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-05">
+        <p class="slide-index">05</p>
+        <h2>5. <code>.env.example</code> 設計</h2>
+        <p class="section-note">
+          公開リポジトリに含める設定例。実APIキー、個人URL、内部URL、個人情報は入れない。
+        </p>
+        <div class="env-grid">
+          <section class="env-card"><h3>Execution</h3><p><code>APP_MODE=sample</code> を既定として、APIキーなし確認を優先する。</p></section>
+          <section class="env-card"><h3>News</h3><p><code>NEWS_PROVIDER</code>、RSS URL、<code>NEWS_LIMIT</code>、<code>SUMMARY_MAX_LENGTH</code>。</p></section>
+          <section class="env-card"><h3>Market</h3><p><code>MARKET_PROVIDER</code>、APIキー欄、Alpha Vantage endpoint、FX設定。</p></section>
+          <section class="env-card"><h3>Output / Request</h3><p><code>REPORT_DIR</code>、<code>LOG_DIR</code>、timeout、retry回数。</p></section>
+        </div>
+        <div class="code-preview">
+          <pre><code># execution mode
+APP_MODE=sample
+
+# news
+NEWS_PROVIDER=rss
+NEWS_RSS_URLS=
+NEWS_JP_RSS_URLS=
+NEWS_GLOBAL_RSS_URLS=
+NEWS_API_KEY=
+NEWS_LIMIT=5
+SUMMARY_MAX_LENGTH=120
+
+# market
+MARKET_PROVIDER=alpha_vantage
+MARKET_API_KEY=
+MARKET_API_ENDPOINT=https://www.alphavantage.co/query
+
+# output
+REPORT_DIR=reports
+LOG_DIR=logs</code></pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-06">
+        <p class="slide-index">06</p>
+        <h2>6. サンプルレポート設計</h2>
+        <div class="mode-split">
+          <section class="panel">
+            <h3>追加するファイル</h3>
+            <p><code>reports/sample-report.md</code> を公開用の固定サンプルレポートとして管理する。</p>
+            <ul class="compact-list">
+              <li>日次生成される <code>reports/YYYY-MM-DD.md</code> とは別にする。</li>
+              <li><code>APP_MODE=sample</code> の出力をもとに作成する。</li>
+              <li>APIキーや外部RSSの内容に依存しない。</li>
+            </ul>
+          </section>
+          <div class="mode-switcher">Report</div>
+          <section class="panel">
+            <h3>含める内容</h3>
+            <ul class="compact-list">
+              <li><code># Morning News Report</code></li>
+              <li>作成日時と実行モード <code>sample</code></li>
+              <li>国内ニュース、海外ニュース、マーケット情報</li>
+              <li>市況コメント、注意事項、投資助言ではない旨</li>
+            </ul>
+          </section>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>含めないもの</th><th>理由</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>APIキー、<code>.env</code> の内容</td><td>機密情報を含む可能性があるため</td></tr>
+              <tr><td>実在有料記事本文</td><td>著作権・利用規約リスクがあるため</td></tr>
+              <tr><td>ログ全文</td><td>実行環境情報を含む可能性があるため</td></tr>
+              <tr><td>売買推奨表現</td><td>投資助言と誤認されるため</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-07">
+        <p class="slide-index">07</p>
+        <h2>7. <code>.gitignore</code> と公開対象</h2>
+        <div class="publish-grid">
+          <section class="publish-card"><h3>含める</h3><p>ソースコード、README、<code>.env.example</code>、<code>.gitignore</code>、<code>sample_data/</code>、<code>tests/</code>、<code>docs/</code>。</p></section>
+          <section class="publish-card"><h3>出力例</h3><p><code>reports/sample-report.md</code> は管理し、日次生成レポートは原則除外する。</p></section>
+          <section class="publish-card"><h3>除外する</h3><p><code>.env</code>、<code>.venv/</code>、<code>__pycache__/</code>、<code>.DS_Store</code>、ログ。</p></section>
+          <section class="publish-card"><h3>注意する</h3><p>既存追跡済みファイルは <code>.gitignore</code> 追加だけでは追跡解除されない。</p></section>
+        </div>
+        <div class="code-preview">
+          <pre><code># environment
+.env
+.env.*
+!.env.example
+
+# virtualenv
+.venv/
+venv/
+
+# python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# logs
+logs/*.log
+!logs/.gitkeep
+
+# generated reports
+reports/*.md
+!reports/sample-report.md
+!reports/.gitkeep</code></pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-08">
+        <p class="slide-index">08</p>
+        <h2>8. 公開前チェック</h2>
+        <div class="check-command-grid">
+          <section class="check-command"><h3>Git管理対象</h3><p><code>git status --short</code><br><code>git ls-files</code></p></section>
+          <section class="check-command"><h3>機密情報</h3><p><code>git grep -n "API_KEY"</code><br><code>git grep -n "apikey="</code></p></section>
+          <section class="check-command"><h3>禁止表現</h3><p><code>git grep -n "買うべき"</code><br><code>git grep -n "必ず上がる"</code></p></section>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>確認内容</th><th>期待結果</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>.env</code> / <code>.venv/</code> / <code>.DS_Store</code></td><td>Git管理対象に含まれない</td></tr>
+              <tr><td><code>logs/app.log</code></td><td>Git管理対象に含まれない</td></tr>
+              <tr><td><code>reports/sample-report.md</code></td><td>Git管理対象に含まれる</td></tr>
+              <tr><td>APIキー実値、個人URL、認証付きURL</td><td>Git管理対象ファイルに含まれない</td></tr>
+              <tr><td>売買推奨や利益保証の表現</td><td>レポート本文やREADMEの出力表現に含まれない</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-09">
+        <p class="slide-index">09</p>
+        <h2>9. READMEコマンド検証</h2>
+        <p class="section-note">
+          READMEに載せたコマンドは、Phase 6 完了前に実行確認する。apiモードは任意機能として文法と安全性を中心に確認する。
+        </p>
+        <div class="command-grid">
+          <section class="command-card"><h3>セットアップ</h3><p><code>python3 -m venv .venv</code><br><code>source .venv/bin/activate</code></p></section>
+          <section class="command-card"><h3>依存関係</h3><p><code>python3 -m pip install -r requirements.txt</code><br><code>python3 -m pip install -r requirements-dev.txt</code></p></section>
+          <section class="command-card"><h3>動作確認</h3><p><code>APP_MODE=sample python3 main.py</code><br><code>python3 -m pytest</code></p></section>
+        </div>
+        <div class="phase-split">
+          <section class="split-card">
+            <h3>必須確認</h3>
+            <p>sampleモード実行、レポート生成、ログ生成、pytest成功。</p>
+          </section>
+          <section class="split-card safe-box">
+            <h3>任意確認</h3>
+            <p>実APIキーを使う確認は公開前チェックの必須条件にしない。</p>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-10">
+        <p class="slide-index">10</p>
+        <h2>10. サンプルデータと設計導線</h2>
+        <div class="doc-route-grid">
+          <section class="doc-route-card"><h3><code>sample_data/</code></h3><p>APIキーなしで動かす正常系サンプル。第三者確認の中心に置く。</p></section>
+          <section class="doc-route-card"><h3><code>sample_data_edge/</code></h3><p>Phase 5 の異常系・境界値テスト用。通常実行では使用しない。</p></section>
+          <section class="doc-route-card"><h3><code>reports/</code></h3><p><code>sample-report.md</code> を安定した出力例として案内する。</p></section>
+          <section class="doc-route-card"><h3><code>docs/</code></h3><p>要件定義、基本設計、詳細設計 Phase 1〜6 へREADMEから導線を置く。</p></section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart LR
+    readme["README.md"] --> req["要件定義"]
+    readme --> basic["基本設計"]
+    readme --> detail["詳細設計 Phase 1-6"]
+    readme --> tests["tests/"]
+    readme --> sample["sample_data/"]
+    readme --> report["reports/sample-report.md"]</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-11">
+        <p class="slide-index">11</p>
+        <h2>11. 実装手順</h2>
+        <div class="flow-rail readme-sequence" id="phase6-flow">
+          <section class="flow-step"><span class="step-label">1</span><strong>README</strong><p>既存説明を読み、実装済み機能に合わせて更新する。</p></section>
+          <section class="flow-step"><span class="step-label">2</span><strong>Config files</strong><p><code>.env.example</code> と <code>.gitignore</code> を整理する。</p></section>
+          <section class="flow-step"><span class="step-label">3</span><strong>Sample</strong><p><code>APP_MODE=sample python3 main.py</code> で出力を確認する。</p></section>
+          <section class="flow-step"><span class="step-label">4</span><strong>Checks</strong><p>pytest、READMEコマンド、Git管理対象、機密情報を確認する。</p></section>
+          <section class="flow-step"><span class="step-label">5</span><strong>Links</strong><p>READMEから設計、テスト、サンプルレポートへ辿れることを確認する。</p></section>
+        </div>
+        <div class="flow-control">
+          <label for="phase6-flow-control">Phase 6実装手順</label>
+          <input id="phase6-flow-control" type="range" data-step-control="phase6-flow" aria-label="Phase 6実装手順">
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-12">
+        <p class="slide-index">12</p>
+        <h2>12. 受け入れ条件</h2>
+        <div class="portfolio-grid">
+          <section class="portfolio-card"><h3>README</h3><p>概要、機能、必要環境、セットアップ、sample実行、api実行（任意）、テスト、出力、注意事項がある。</p></section>
+          <section class="portfolio-card"><h3>sample実行</h3><p>README通りに <code>APP_MODE=sample python3 main.py</code> を実行するとレポートが生成される。</p></section>
+          <section class="portfolio-card"><h3>pytest</h3><p>README通りに <code>python3 -m pytest</code> を実行できる。</p></section>
+          <section class="portfolio-card"><h3>公開安全性</h3><p><code>.env.example</code>、<code>.gitignore</code>、Git管理対象チェックで機密情報を除外できる。</p></section>
+          <section class="portfolio-card"><h3>サンプル出力</h3><p><code>reports/sample-report.md</code> に主要セクション、注意事項、投資助言ではない旨が含まれる。</p></section>
+          <section class="portfolio-card"><h3>第三者目線</h3><p>APIキーなしでセットアップ、sample実行、出力確認まで完了できる。</p></section>
+        </div>
+      </article>
+    </main>
+
+    <footer class="deck-footer">
+      注: 本ドキュメントはレビュー用HTML。正本はMarkdownを使用する。更新日: 2026-05-26 / 出典: 詳細設計Phase 6.md
+    </footer>
+  </body>
+</html>

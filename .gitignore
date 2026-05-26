@@ -2,6 +2,15 @@
 .env
 .env.*
 !.env.example
+.venv/
+venv/
+morning-news/.venv/
 logs/*.log
 morning-news/logs/*.log
 **/__pycache__/
+*.py[cod]
+.pytest_cache/
+morning-news/.pytest_cache/
+morning-news/reports/*.md
+!morning-news/reports/sample-report.md
+!morning-news/reports/.gitkeep

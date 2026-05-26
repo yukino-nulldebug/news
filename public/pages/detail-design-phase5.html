@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morning News 詳細設計 Phase 5</title>
+    <link rel="stylesheet" href="../assets/detail-design-phase5.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        if (!window.mermaid) return;
+        window.mermaid.initialize({
+          startOnLoad: true,
+          theme: "base",
+          themeVariables: {
+            background: "#ffffff",
+            primaryColor: "#f2f2f3",
+            primaryTextColor: "#1a1a1c",
+            primaryBorderColor: "#8f9096",
+            lineColor: "#8f9096",
+            secondaryColor: "#ffffff",
+            tertiaryColor: "#f7f7f8",
+            fontFamily: "Noto Sans JP, Hiragino Sans, Yu Gothic, system-ui, sans-serif"
+          }
+        });
+      });
+    </script>
+    <script defer src="../assets/deck-interactions.js"></script>
+  </head>
+  <body>
+    <header class="deck-header">
+      <p class="deck-label">Portfolio Detail Design Deck</p>
+      <h1>Morning News 詳細設計 Phase 5</h1>
+      <ul class="deck-meta">
+        <li>版: draft</li>
+        <li>更新日: 2026-05-26</li>
+        <li>正本: docs/detail-design/詳細設計Phase 5.md</li>
+        <li>対象: pytest追加</li>
+      </ul>
+      <nav class="deck-nav" aria-label="ドキュメント内ナビゲーション">
+        <a href="../index.html">ドキュメント一覧へ戻る</a>
+        <a href="./detail-design-phase6.html">詳細設計 Phase 6 を見る</a>
+        <a href="./detail-design-phase4.html">詳細設計 Phase 4 を見る</a>
+        <a href="./basic-design.html">基本設計を見る</a>
+        <a href="./requirements.html">要件定義を見る</a>
+      </nav>
+    </header>
+
+    <main class="deck">
+      <article class="slide cover phase5-cover" id="slide-01">
+        <p class="slide-index">01</p>
+        <h2>1. 詳細設計の目的</h2>
+        <p class="lead">
+          Phase 5 は、Phase 4 まで手動確認していた主要処理を pytest で自動化する。
+          外部ネットワーク、実APIキー、実 <code>.env</code> に依存しないテストを優先する。
+        </p>
+        <div class="summary-grid">
+          <section class="summary-card"><h3>Unit</h3><p>整形・計算</p></section>
+          <section class="summary-card"><h3>Provider</h3><p>外部通信なし</p></section>
+          <section class="summary-card"><h3>Integration</h3><p>sample / api</p></section>
+          <section class="summary-card"><h3>Error</h3><p>異常系</p></section>
+          <section class="summary-card"><h3>Security</h3><p>キー非出力</p></section>
+          <section class="summary-card"><h3>Public</h3><p>第三者実行</p></section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart LR
+    phase4["Phase 4: RSS/API取得"] --> phase5["Phase 5: pytest"]
+    phase5 --> unit["Unit tests"]
+    phase5 --> provider["Provider mock tests"]
+    phase5 --> integration["sample/api integration"]
+    phase5 --> security["secret masking"]
+    unit --> phase6["Phase 6: README公開準備"]
+    provider --> phase6
+    integration --> phase6
+    security --> phase6</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-02">
+        <p class="slide-index">02</p>
+        <h2>2. Phase 5 の対象範囲</h2>
+        <div class="phase-boundary">
+          <section class="panel panel-in">
+            <h3>Phase 5 で実装する</h3>
+            <ul class="boundary-list">
+              <li><code>requirements-dev.txt</code> と pytest 実行環境</li>
+              <li><code>tests/</code> 配下の単体、Provider、結合、securityテスト</li>
+              <li><code>tmp_path</code> / <code>monkeypatch</code> を使うfixture</li>
+              <li>sampleモードとモックapiモードの結合テスト</li>
+              <li>JSON欠損、数値不正、保存失敗などの異常系</li>
+              <li>APIキーや認証URLを出力しない回帰テスト</li>
+            </ul>
+          </section>
+          <section class="panel panel-out">
+            <h3>Phase 5 では実装しない</h3>
+            <ul class="boundary-list">
+              <li>実APIへの自動E2Eテスト</li>
+              <li>定時実行テスト</li>
+              <li>Web UI、通知、AI要約のテスト</li>
+              <li>厳密なカバレッジ閾値運用</li>
+              <li>外部サービス利用規約の自動検証</li>
+              <li>NewsAPI の実Provider化</li>
+            </ul>
+          </section>
+        </div>
+        <div class="phase-split">
+          <section class="split-card">
+            <span class="priority-tag">Phase 5-A</span>
+            <h3>sampleモード中心</h3>
+            <p>formatter、calculator、generator、writer、execution result、sample結合テストを先に整備する。</p>
+          </section>
+          <section class="split-card">
+            <span class="priority-tag">Phase 5-B</span>
+            <h3>Provider / api / security</h3>
+            <p>settings、fetcher、HTTP、Provider、api結合、セキュリティ回帰テストを追加する。</p>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-03">
+        <p class="slide-index">03</p>
+        <h2>3. テスト基本方針</h2>
+        <p class="section-note">
+          テストは仕様ベースで確認する。出力ファイルは一時ディレクトリへ閉じ込め、既存の <code>reports/</code> や <code>logs/</code> を壊さない。
+        </p>
+        <div class="test-layers">
+          <section class="layer-card"><h3>Unit</h3><p>概要文整形、変化率計算、Markdown生成、保存先生成、実行結果集計を検証する。</p></section>
+          <section class="layer-card"><h3>Provider</h3><p>RSS、Alpha Vantage、HTTP共通処理を <code>monkeypatch</code> で固定応答に差し替える。</p></section>
+          <section class="layer-card"><h3>Integration</h3><p><code>APP_MODE=sample</code> と、HTTPをモックした <code>APP_MODE=api</code> を確認する。</p></section>
+          <section class="layer-card"><h3>Security</h3><p>ログ、警告、レポート、例外メッセージに秘密値が出ないことを確認する。</p></section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart TD
+    tests["python3 -m pytest"] --> unit["tests/unit"]
+    tests --> providers["tests/providers"]
+    tests --> integration["tests/integration"]
+    tests --> security["tests/security"]
+    unit --> tmp["tmp_path"]
+    providers --> patch["monkeypatch"]
+    integration --> noNetwork["No external network"]
+    security --> mask["masked secrets"]</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-04">
+        <p class="slide-index">04</p>
+        <h2>4. テストファイル構成</h2>
+        <div class="repo-map">
+          <section class="panel">
+            <h3>追加する構成</h3>
+            <p class="section-note">
+              実装と同じ責務境界でテストを分け、第三者が失敗箇所を追いやすい構成にする。
+            </p>
+            <div class="module-stack">
+              <div class="module-node"><strong><code>tests/unit/</code></strong>関数単位、設定、fetcher、HTTPの確認</div>
+              <div class="module-node"><strong><code>tests/providers/</code></strong>RSS、NewsAPI未対応スタブ、Alpha Vantage</div>
+              <div class="module-node"><strong><code>tests/integration/</code></strong>sample/apiモードの起動から保存まで</div>
+              <div class="module-node"><strong><code>tests/security/</code></strong>APIキー、token、認証URLの非出力</div>
+            </div>
+          </section>
+          <section class="code-preview">
+            <pre><code>morning-news/
+├── requirements-dev.txt
+└── tests/
+    ├── conftest.py
+    ├── unit/
+    │   ├── test_settings.py
+    │   ├── test_news_fetcher.py
+    │   ├── test_news_formatter.py
+    │   ├── test_market_fetcher.py
+    │   ├── test_market_calculator.py
+    │   ├── test_report_generator.py
+    │   ├── test_report_writer.py
+    │   ├── test_execution_result.py
+    │   └── test_http_client.py
+    ├── providers/
+    ├── integration/
+    └── security/</code></pre>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-05">
+        <p class="slide-index">05</p>
+        <h2>5. 共通fixtureと実行コマンド</h2>
+        <div class="fixture-grid">
+          <section class="fixture-card"><h3><code>sample_settings</code></h3><p>sampleモード、出力先、ログ先、JSONパスを <code>tmp_path</code> 配下へ向ける。</p></section>
+          <section class="fixture-card"><h3><code>api_settings</code></h3><p>RSS URLとマーケット設定は実在URLではなくテスト用URLに固定する。</p></section>
+          <section class="fixture-card"><h3>固定レスポンス</h3><p>RSS XML、Alpha Vantage JSON、疑似HTTPレスポンスを外部通信なしで返す。</p></section>
+        </div>
+        <div class="command-grid">
+          <section class="command-card"><h3>全テスト</h3><p><code>python3 -m pytest</code></p></section>
+          <section class="command-card"><h3>カテゴリ別</h3><p><code>python3 -m pytest tests/unit</code><br><code>python3 -m pytest tests/providers</code></p></section>
+          <section class="command-card"><h3>README掲載</h3><p><code>python3 -m pytest</code><br><code>APP_MODE=sample python3 main.py</code></p></section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart LR
+    fixture["conftest.py"] --> tmp["tmp_path reports/logs"]
+    fixture --> env["monkeypatch.setenv"]
+    fixture --> rss["fixed RSS XML"]
+    fixture --> json["fixed market JSON"]
+    tmp --> tests["pytest tests"]
+    env --> tests
+    rss --> tests
+    json --> tests</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-06">
+        <p class="slide-index">06</p>
+        <h2>6. 単体テスト設計</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>対象</th><th>主な確認</th><th>失敗時に検知したいこと</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>news/formatter.py</code></td><td>空白正規化、上限、省略、空summary</td><td>レポート表示が長すぎる、欠損が見えない</td></tr>
+              <tr><td><code>market/calculator.py</code></td><td>前日比、変化率、丸め、<code>previous_close=0</code></td><td>市況数値の誤計算</td></tr>
+              <tr><td><code>report/generator.py</code></td><td>主要セクション、市況コメント、禁止表現不使用</td><td>公開レポートとしての破綻</td></tr>
+              <tr><td><code>report/writer.py</code></td><td>日付ファイル名、保存先、保存失敗</td><td>既存ファイル破壊や保存失敗の見落とし</td></tr>
+              <tr><td><code>settings.py</code></td><td><code>.env</code>、Provider、数値設定、URL設定</td><td>環境差分による起動不能</td></tr>
+              <tr><td><code>http_client.py</code></td><td>GET、リトライ、JSON不正、URLマスク</td><td>外部取得失敗時の不安定化</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-07">
+        <p class="slide-index">07</p>
+        <h2>7. Provider・HTTPテスト</h2>
+        <p class="section-note">
+          Providerのテストは外部サービスに接続しない。取得関数を差し替えて、正規化と警告の仕様を確認する。
+        </p>
+        <div class="provider-grid">
+          <section class="provider-card"><h3>RSS Provider</h3><p>正常RSS、HTML概要、日時欠損、title欠損、重複URL、HTTP失敗、limitを検証する。</p></section>
+          <section class="provider-card"><h3>NewsAPI Provider</h3><p>Phase 5では未対応スタブのみ。通信せず、空配列と警告を返すことに限定する。</p></section>
+          <section class="provider-card"><h3>Alpha Vantage</h3><p>APIキー未設定、正常Quote、API制限Note、部分失敗、キー値マスクを検証する。</p></section>
+          <section class="provider-card"><h3>HTTP Client</h3><p><code>sanitize_url()</code>、200応答、JSON解析失敗、404、Timeout、リトライを確認する。</p></section>
+          <section class="provider-card"><h3>マスク対象</h3><p><code>apikey</code>、<code>api_key</code>、<code>token</code>、<code>access_token</code> を <code>***</code> に置換する。</p></section>
+          <section class="provider-card"><h3>後続任意</h3><p>NewsAPIの実Provider化、GDELT、GNews、実API任意E2EはPhase 5の外に置く。</p></section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-08">
+        <p class="slide-index">08</p>
+        <h2>8. 結合テスト設計</h2>
+        <div class="mode-split">
+          <section class="panel">
+            <h3><code>APP_MODE=sample</code></h3>
+            <ul class="compact-list">
+              <li><code>main.main()</code> が終了コード <code>0</code> を返す。</li>
+              <li><code>tmp_path/reports/YYYY-MM-DD.md</code> を作る。</li>
+              <li>国内ニュース、海外ニュース、マーケット情報、市況コメント、注意事項を含む。</li>
+              <li>再実行しても同一ファイルが上書きされ、成功する。</li>
+            </ul>
+          </section>
+          <div class="mode-switcher">Integration</div>
+          <section class="panel">
+            <h3><code>APP_MODE=api</code></h3>
+            <ul class="compact-list">
+              <li>RSSとマーケットAPI成功時は保存まで完了する。</li>
+              <li>RSSのみ成功、マーケットAPIキー未設定でも警告付きで成功する。</li>
+              <li>NewsAPI provider指定では通信せず未対応警告を返す。</li>
+              <li>外部データ全件0件なら保存せず終了コード <code>2</code>。</li>
+            </ul>
+          </section>
+        </div>
+        <div class="mermaid-panel">
+          <pre class="mermaid">flowchart TD
+    start["main.main"] --> mode{"APP_MODE"}
+    mode -->|sample| sample["sample_data"]
+    mode -->|api| api["mocked external data"]
+    sample --> report["report saved"]
+    api --> any{"1件以上取得?"}
+    any -->|Yes| report
+    any -->|No| exit2["exit code 2 / no report"]
+    report --> exit0["exit code 0"]</pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-09">
+        <p class="slide-index">09</p>
+        <h2>9. 異常系とセキュリティ回帰</h2>
+        <div class="risk-grid">
+          <section class="risk-card"><strong>JSON異常</strong><p>ファイルなし、壊れたJSON、<code>items</code> 型不正、必須項目欠損。</p></section>
+          <section class="risk-card"><strong>設定異常</strong><p><code>SUMMARY_MAX_LENGTH=0</code>、<code>NEWS_LIMIT=abc</code>、不正RSS URL。</p></section>
+          <section class="risk-card"><strong>保存異常</strong><p>レポート保存先が書き込めない場合は <code>ReportWriteError</code>。</p></section>
+          <section class="risk-card stop-path"><strong>全取得失敗</strong><p>apiモードで外部データ全件0件なら終了コード <code>2</code>。</p></section>
+        </div>
+        <div class="security-strip">
+          <section class="security-check"><strong>APIキー</strong><p><code>test-secret-key</code> を出さない。</p></section>
+          <section class="security-check"><strong>認証クエリ</strong><p><code>apikey=***</code> にする。</p></section>
+          <section class="security-check"><strong>token</strong><p><code>token=***</code> にする。</p></section>
+          <section class="security-check"><strong>.env</strong><p>全文や実値を出力しない。</p></section>
+          <section class="security-check"><strong>Authorization</strong><p>ヘッダー内容をログに出さない。</p></section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-10">
+        <p class="slide-index">10</p>
+        <h2>10. テストデータ設計</h2>
+        <p class="section-note">
+          正常系は既存の <code>sample_data/</code> を使う。境界値と異常系は Phase 5 で追加する <code>sample_data_edge/</code> に分ける。
+        </p>
+        <div class="data-grid">
+          <section class="data-card"><h3><code>sample_data/</code></h3><p>APIキーなしで動かす正常系sampleモードの確認に使う。</p></section>
+          <section class="data-card"><h3><code>sample_data_edge/</code></h3><p>欠損、空概要、数値不正などの境界値・異常系テストに使う。</p></section>
+          <section class="data-card"><h3><code>tmp_path</code></h3><p>ファイル欠損、JSON不正、保存失敗など、実ファイルを壊すケースに使う。</p></section>
+        </div>
+        <div class="code-preview">
+          <pre><code>sample_data_edge/ は通常実行では使用しない。
+pytest実行時のみ参照し、公開後の利用者が sample モードを確認するときは sample_data/ を使う。</code></pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-11">
+        <p class="slide-index">11</p>
+        <h2>11. 実装順序</h2>
+        <p class="section-note">
+          Phase 5-A でsampleモード中心の回帰テストを固め、Phase 5-B でProvider、apiモード、セキュリティ回帰を足す。
+        </p>
+        <div class="flow-rail phase5-flow" id="phase5-flow">
+          <section class="flow-step"><span class="step-label">5-A</span><strong>Dev deps</strong><p><code>requirements-dev.txt</code> と <code>conftest.py</code>。</p></section>
+          <section class="flow-step"><span class="step-label">5-A</span><strong>Core unit</strong><p>formatter、calculator、generator、writer、execution result。</p></section>
+          <section class="flow-step"><span class="step-label">5-A</span><strong>sample</strong><p>sampleモード結合テストと手動実行回帰。</p></section>
+          <section class="flow-step"><span class="step-label">5-B</span><strong>Provider</strong><p>settings、fetcher、HTTP、RSS、Alpha Vantage、NewsAPIスタブ。</p></section>
+          <section class="flow-step"><span class="step-label">5-B</span><strong>Security</strong><p>api結合、全取得失敗、秘密情報非出力。</p></section>
+        </div>
+        <div class="flow-control">
+          <label for="phase5-flow-control">実装順序</label>
+          <input id="phase5-flow-control" type="range" data-step-control="phase5-flow" aria-label="Phase 5実装順序">
+        </div>
+      </article>
+
+      <article class="slide slide-tall" id="slide-12">
+        <p class="slide-index">12</p>
+        <h2>12. 受け入れ条件</h2>
+        <div class="readiness-grid">
+          <section class="readiness-card"><h3>pytest成功</h3><p><code>python3 -m pytest</code> が終了コード <code>0</code> で完了する。</p></section>
+          <section class="readiness-card"><h3>外部依存なし</h3><p>外部ネットワーク、実APIキー、実 <code>.env</code> に依存しない。</p></section>
+          <section class="readiness-card"><h3>主要処理</h3><p>概要文整形、変化率計算、Markdown生成、市況コメント生成を単体テストで確認できる。</p></section>
+          <section class="readiness-card"><h3>Provider</h3><p>RSS、Alpha Vantage、NewsAPI未対応スタブ、HTTP共通処理を確認できる。</p></section>
+          <section class="readiness-card"><h3>結合</h3><p>sample保存、api成功、api全取得失敗時の終了コード <code>2</code> を確認できる。</p></section>
+          <section class="readiness-card"><h3>異常系</h3><p>JSON欠損、数値不正、設定異常、保存失敗を検証している。</p></section>
+          <section class="readiness-card"><h3>機密情報</h3><p>APIキー、token、未マスク認証URLがログ・レポート・警告に出ない。</p></section>
+          <section class="readiness-card"><h3>Phase 6へ</h3><p>READMEで案内できるテスト実行手順が確定している。</p></section>
+        </div>
+      </article>
+    </main>
+
+    <footer class="deck-footer">
+      注: 本ドキュメントはレビュー用HTML。正本はMarkdownを使用する。更新日: 2026-05-26 / 出典: 詳細設計Phase 5.md
+    </footer>
+  </body>
+</html>
