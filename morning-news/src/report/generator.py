@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from src.utils.exceptions import ReportGenerationError
+from src.utils.http_client import sanitize_text
 
 DISCLAIMER = "本レポートは情報提供を目的としており、投資助言ではありません。"
 FEATURE_ID = "F-06"
@@ -174,7 +175,7 @@ def generate_report(report_data: dict) -> str:
 
         if warnings:
             sections.extend(["", "### 警告", ""])
-            sections.extend(f"- {warning}" for warning in warnings)
+            sections.extend(f"- {sanitize_text(warning)}" for warning in warnings)
 
         return "\n".join(sections).rstrip() + "\n"
     except (KeyError, TypeError, ValueError) as error:

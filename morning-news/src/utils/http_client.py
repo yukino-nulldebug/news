@@ -4,12 +4,17 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from typing import Any
+import re
 from urllib.parse import parse_qsl, quote_plus, urlencode, urlsplit, urlunsplit
 
 from src.utils.exceptions import ExternalDataError, ExternalFetchError
 
 USER_AGENT = "MorningNews/0.1"
 SECRET_QUERY_KEYS = {"apikey", "api_key", "key", "token", "access_token"}
+SECRET_ASSIGNMENT_RE = re.compile(
+    r"(?i)\b(apikey|api_key|key|token|access_token)\s*=\s*([^&\s]+)"
+)
+AUTHORIZATION_RE = re.compile(r"(?i)\bAuthorization\s*:\s*[^\s,;]+(?:\s+[^\s,;]+)?")
 
 
 def _encode_query_items(query_items: list[tuple[str, str]]) -> str:
@@ -35,6 +40,13 @@ def sanitize_url(url: str) -> str:
             parsed.fragment,
         )
     )
+
+
+def sanitize_text(value: object) -> str:
+    """ログ・レポート用テキスト内の認証値をマスクする。"""
+    text = str(value)
+    text = SECRET_ASSIGNMENT_RE.sub(lambda match: f"{match.group(1)}=***", text)
+    return AUTHORIZATION_RE.sub("Authorization: ***", text)
 
 
 def _url_with_params(url: str, params: Mapping[str, Any] | None) -> str:

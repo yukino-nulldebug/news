@@ -9,7 +9,7 @@ from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from src.utils.exceptions import ExternalDataError, ExternalFetchError
-from src.utils.http_client import get_text, sanitize_url
+from src.utils.http_client import get_text, sanitize_text, sanitize_url
 
 PROCESS_NAME = "news.rss"
 TRACKING_QUERY_KEYS = {"fbclid", "gclid"}
@@ -173,7 +173,7 @@ def fetch_rss_news(
                 process_name=PROCESS_NAME,
             )
         except (ExternalFetchError, ExternalDataError) as error:
-            warnings.append(f"RSS取得に失敗しました: {masked_url}: {error.message}")
+            warnings.append(f"RSS取得に失敗しました: {masked_url}: {sanitize_text(error.message)}")
             continue
 
         parsed = feedparser.parse(feed_text)

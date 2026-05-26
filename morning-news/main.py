@@ -21,6 +21,7 @@ from src.utils.execution_result import (
     record_warning,
     set_count,
 )
+from src.utils.http_client import sanitize_text
 from src.utils.logger import log_error, log_info, log_warning, setup_logger
 
 
@@ -42,8 +43,9 @@ def record_recoverable_warning(
     message: str,
 ) -> None:
     """継続可能な警告をログと実行結果に記録する。"""
-    record_warning(result, feature_id, process_name, message)
-    log_warning(logger, feature_id, process_name, message)
+    safe_message = sanitize_text(message)
+    record_warning(result, feature_id, process_name, safe_message)
+    log_warning(logger, feature_id, process_name, safe_message)
 
 
 def _warning_parts(entry, default_feature_id: str, default_process_name: str) -> tuple[str, str, str]:
@@ -232,8 +234,9 @@ def build_report_data(settings: Settings, logger, result: dict) -> dict:
 
 def log_exception(logger, result: dict, error: MorningNewsError) -> None:
     """例外情報をログと実行結果に記録する。"""
-    record_error(result, error.feature_id, error.process_name, error.message)
-    log_error(logger, error.feature_id, error.process_name, error.message)
+    safe_message = sanitize_text(error.message)
+    record_error(result, error.feature_id, error.process_name, safe_message)
+    log_error(logger, error.feature_id, error.process_name, safe_message)
 
 
 def log_execution_summary(logger, result: dict) -> None:
