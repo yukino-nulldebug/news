@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import datetime
 
 import pytest
@@ -108,3 +109,27 @@ def test_fetch_alpha_vantage_markets_keeps_successes_and_masks_key(monkeypatch, 
     assert warnings
     assert "test-secret-key" not in warnings[0]
     assert "apikey=***" in warnings[0]
+
+
+def test_fetch_alpha_vantage_markets_waits_between_targets(monkeypatch, api_settings):
+    sleeps = []
+
+    def fake_get_json(url, *, params, **kwargs):
+        if params["function"] == "GLOBAL_QUOTE":
+            return {"Global Quote": {"05. price": "105.0", "08. previous close": "100.0"}}
+        return {
+            "Time Series FX (Daily)": {
+                "2026-05-26": {"4. close": "155.5"},
+                "2026-05-25": {"4. close": "154.5"},
+            }
+        }
+
+    monkeypatch.setattr(alpha_module, "get_json", fake_get_json)
+    monkeypatch.setattr(alpha_module.time, "sleep", lambda seconds: sleeps.append(seconds))
+
+    settings = replace(api_settings, market_request_interval_seconds=2)
+    items, warnings = alpha_module.fetch_alpha_vantage_markets(settings)
+
+    assert len(items) == 2
+    assert warnings == []
+    assert sleeps == [2]

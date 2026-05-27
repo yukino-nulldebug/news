@@ -33,7 +33,7 @@
       <h1>Morning News 詳細設計 Phase 4</h1>
       <ul class="deck-meta">
         <li>版: draft</li>
-        <li>更新日: 2026-05-24</li>
+        <li>更新日: 2026-05-27</li>
         <li>正本: docs/detail-design/詳細設計Phase 4.md</li>
         <li>対象: RSS/API取得追加</li>
       </ul>
@@ -240,6 +240,7 @@
               <li><code>news_jp_rss_urls</code><span>国内RSS URLのtuple</span></li>
               <li><code>market_provider</code><span><code>alpha_vantage</code></span></li>
               <li><code>market_targets</code><span><code>MarketTarget</code> のtuple</span></li>
+              <li><code>market_request_interval_seconds</code><span>マーケットAPI連続取得の待機秒数</span></li>
               <li><code>settings_warnings</code><span>ログ初期化後に記録する警告</span></li>
             </ul>
           </section>
@@ -378,7 +379,10 @@
     E --> F{"current / previous 取得?"}
     F -->|Yes| M["MarketItem"]
     F -->|No| S
-    M --> G["calculate_market_changes"]</pre>
+    M --> I["次の対象があれば MARKET_REQUEST_INTERVAL_SECONDS 秒待機"]
+    S --> I
+    I --> C
+    I --> G["calculate_market_changes"]</pre>
         </div>
       </article>
 

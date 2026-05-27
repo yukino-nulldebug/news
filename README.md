@@ -21,6 +21,7 @@
 - 詳細設計 Phase 4: `docs/detail-design/詳細設計Phase 4.md`
 - 詳細設計 Phase 5: `docs/detail-design/詳細設計Phase 5.md`
 - 詳細設計 Phase 6: `docs/detail-design/詳細設計Phase 6.md`
+- 変更メモ: `docs/changes/2026-05-27-market-request-interval.md`
 
 ## レビュー用HTML
 

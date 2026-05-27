@@ -263,12 +263,18 @@ MARKET_SYMBOL_NIKKEI225=
 MARKET_SYMBOL_SP500=
 MARKET_FX_BASE=USD
 MARKET_FX_QUOTE=JPY
+
+# external request
+REQUEST_TIMEOUT_SECONDS=10
+REQUEST_RETRY_COUNT=4
+MARKET_REQUEST_INTERVAL_SECONDS=2
 ```
 
 注意点:
 
 - `MARKET_API_KEY` は `.env` に設定し、Gitにコミットしない。
 - `ALPHA_VANTAGE_API_KEY` も互換名として利用できるが、READMEでは `MARKET_API_KEY` を推奨する。
+- `MARKET_REQUEST_INTERVAL_SECONDS` は、複数のマーケット対象を連続取得するときに各取得の間で待つ秒数である。
 - 無料枠や取得可能シンボルは外部サービス側の仕様に依存する。
 - APIキーや認証URLはログ・レポートへ出力しない設計である。
 
@@ -340,6 +346,7 @@ READMEでは、主要な環境変数を表で説明し、詳細は `.env.example
 | `SUMMARY_MAX_LENGTH` | `120` | 概要文の最大文字数 |
 | `REQUEST_TIMEOUT_SECONDS` | `10` | 外部取得タイムアウト |
 | `REQUEST_RETRY_COUNT` | `1` | 外部取得リトライ回数 |
+| `MARKET_REQUEST_INTERVAL_SECONDS` | `0` | マーケットAPIの連続取得間隔 |
 
 ### 3.15 `サンプルデータ`
 
@@ -427,7 +434,8 @@ LOG_DIR=logs
 
 # external request
 REQUEST_TIMEOUT_SECONDS=10
-REQUEST_RETRY_COUNT=1
+REQUEST_RETRY_COUNT=4
+MARKET_REQUEST_INTERVAL_SECONDS=2
 ```
 
 ### 4.3 `.env.example` の確認観点
@@ -438,7 +446,7 @@ REQUEST_RETRY_COUNT=1
 | RSS URL欄 | 実在する個人用URLを入れない |
 | コメント | 用途がわかる最小限のコメントにする |
 | 重複変数 | 互換名は必要なものだけ残す |
-| 既定値 | コードの既定値と一致している |
+| 推奨値 | コード既定値と異なる運用推奨値はREADMEで用途を説明する |
 
 ### 4.4 `.env` 作成手順
 

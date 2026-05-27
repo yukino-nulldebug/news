@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morning News 変更メモ</title>
+    <link rel="stylesheet" href="../assets/common.css">
+    <script defer src="../assets/deck-interactions.js"></script>
+  </head>
+  <body>
+    <header class="deck-header">
+      <p class="deck-label">Morning News Change Note</p>
+      <h1>マーケットAPI連続取得間隔の追加</h1>
+      <ul class="deck-meta">
+        <li>更新日: 2026-05-27</li>
+        <li>正本: docs/changes/2026-05-27-market-request-interval.md</li>
+        <li>対象: Alpha Vantage 取得間隔</li>
+      </ul>
+      <nav class="deck-nav" aria-label="ドキュメント内ナビゲーション">
+        <a href="../index.html">ドキュメント一覧へ戻る</a>
+        <a href="./detail-design-phase4.html">詳細設計 Phase 4 を見る</a>
+        <a href="./detail-design-phase5.html">詳細設計 Phase 5 を見る</a>
+        <a href="./detail-design-phase6.html">詳細設計 Phase 6 を見る</a>
+      </nav>
+    </header>
+
+    <main class="deck">
+      <article class="slide cover">
+        <p class="slide-index">Change</p>
+        <h2>背景</h2>
+        <p class="lead">
+          Alpha Vantage の無料枠では短時間の連続リクエストで制限に当たることがある。
+          複数のマーケット対象を取得するとき、各取得の間で待機できる設定を追加した。
+        </p>
+        <div class="summary-grid">
+          <section class="summary-card"><h3>timeout</h3><p><code>10s</code></p></section>
+          <section class="summary-card"><h3>retry</h3><p><code>4</code></p></section>
+          <section class="summary-card"><h3>market interval</h3><p><code>2s</code></p></section>
+        </div>
+        <div class="code-preview">
+          <pre><code># external request
+REQUEST_TIMEOUT_SECONDS=10
+REQUEST_RETRY_COUNT=4
+MARKET_REQUEST_INTERVAL_SECONDS=2</code></pre>
+        </div>
+      </article>
+
+      <article class="slide slide-tall">
+        <p class="slide-index">Implementation</p>
+        <h2>実装内容</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>ファイル</th><th>変更内容</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>morning-news/.env</code></td><td><code>MARKET_REQUEST_INTERVAL_SECONDS=2</code> を追加し、誤った単数形の変数名を置き換えた。</td></tr>
+              <tr><td><code>morning-news/.env.example</code></td><td>Alpha Vantage向けの推奨外部取得設定を追加した。</td></tr>
+              <tr><td><code>src/config/settings.py</code></td><td><code>MARKET_REQUEST_INTERVAL_SECONDS</code> を読み込み、<code>Settings.market_request_interval_seconds</code> として保持する。</td></tr>
+              <tr><td><code>src/market/providers/alpha_vantage.py</code></td><td>複数ターゲット取得ループで、最後以外の取得後に <code>time.sleep()</code> する。</td></tr>
+              <tr><td><code>tests/</code></td><td>設定読み込みと待機処理のテストを追加した。</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="slide slide-tall">
+        <p class="slide-index">Operation</p>
+        <h2>運用メモ</h2>
+        <div class="two-col">
+          <section class="panel">
+            <h3>最初の推奨値</h3>
+            <p><code>MARKET_REQUEST_INTERVAL_SECONDS=2</code> で試す。</p>
+          </section>
+          <section class="panel">
+            <h3>制限に当たる場合</h3>
+            <p><code>MARKET_REQUEST_INTERVAL_SECONDS=5</code> へ増やして再実行する。</p>
+          </section>
+        </div>
+        <p class="section-note">
+          未設定時のコード既定値は <code>0</code> で、待機しない。
+        </p>
+      </article>
+    </main>
+  </body>
+</html>

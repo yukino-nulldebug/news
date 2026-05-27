@@ -22,6 +22,9 @@ def test_load_settings_uses_sample_defaults(patched_settings_dirs):
     assert loaded.news_provider == "rss"
     assert loaded.news_limit == 5
     assert loaded.summary_max_length == 120
+    assert loaded.request_timeout_seconds == 10
+    assert loaded.request_retry_count == 1
+    assert loaded.market_request_interval_seconds == 0
     assert loaded.report_dir == patched_settings_dirs / "reports"
 
 
@@ -68,3 +71,11 @@ def test_load_settings_resolves_market_provider_alias(monkeypatch, patched_setti
     loaded = settings_module.load_settings()
 
     assert loaded.market_provider == "alpha_vantage"
+
+
+def test_load_settings_reads_market_request_interval_seconds(monkeypatch, patched_settings_dirs):
+    monkeypatch.setenv("MARKET_REQUEST_INTERVAL_SECONDS", "2")
+
+    loaded = settings_module.load_settings()
+
+    assert loaded.market_request_interval_seconds == 2

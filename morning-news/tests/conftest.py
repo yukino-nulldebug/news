@@ -37,6 +37,7 @@ APP_ENV_NAMES = (
     "LOG_DIR",
     "REQUEST_TIMEOUT_SECONDS",
     "REQUEST_RETRY_COUNT",
+    "MARKET_REQUEST_INTERVAL_SECONDS",
 )
 
 
@@ -127,6 +128,7 @@ def make_settings(
     news_jp_rss_urls: tuple[str, ...] = (),
     news_global_rss_urls: tuple[str, ...] = (),
     market_targets: tuple[MarketTarget, ...] | None = None,
+    market_request_interval_seconds: int = 0,
 ) -> Settings:
     sample_data_dir = tmp_path / "sample_data"
     return Settings(
@@ -169,6 +171,7 @@ def make_settings(
         summary_max_length=120,
         request_timeout_seconds=10,
         request_retry_count=1,
+        market_request_interval_seconds=market_request_interval_seconds,
         timezone=JST,
         target_date=date(2026, 5, 26),
         settings_warnings=(),

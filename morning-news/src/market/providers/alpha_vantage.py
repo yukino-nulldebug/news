@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from datetime import datetime
 from typing import Any
 
@@ -197,6 +198,12 @@ def _fetch_target(target, settings, fetched_at: datetime) -> dict:
     )
 
 
+def _sleep_between_market_requests(settings) -> None:
+    interval_seconds = settings.market_request_interval_seconds
+    if interval_seconds > 0:
+        time.sleep(interval_seconds)
+
+
 def fetch_alpha_vantage_markets(settings) -> tuple[list[dict], list[str]]:
     """対象指標を順に取得し、MarketItem形式へ正規化する。"""
     if not settings.market_api_key:
@@ -206,7 +213,7 @@ def fetch_alpha_vantage_markets(settings) -> tuple[list[dict], list[str]]:
     items: list[dict] = []
     warnings: list[str] = []
 
-    for target in settings.market_targets:
+    for index, target in enumerate(settings.market_targets):
         try:
             items.append(_fetch_target(target, settings, fetched_at))
         except (ExternalFetchError, ExternalDataError) as error:
@@ -214,5 +221,7 @@ def fetch_alpha_vantage_markets(settings) -> tuple[list[dict], list[str]]:
                 f"{target.name} の外部取得に失敗しました: "
                 f"{_safe_error_message(error, settings.market_api_key)}"
             )
+        if index < len(settings.market_targets) - 1:
+            _sleep_between_market_requests(settings)
 
     return items, warnings

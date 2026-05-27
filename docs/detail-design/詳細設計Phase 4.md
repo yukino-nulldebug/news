@@ -276,6 +276,7 @@ LOG_DIR=logs
 # external request
 REQUEST_TIMEOUT_SECONDS=10
 REQUEST_RETRY_COUNT=1
+MARKET_REQUEST_INTERVAL_SECONDS=0
 ```
 
 ### 6.2 設定値一覧
@@ -301,6 +302,7 @@ REQUEST_RETRY_COUNT=1
 | `LOG_DIR` | `logs` | ログ出力先 |
 | `REQUEST_TIMEOUT_SECONDS` | `10` | 1リクエストのタイムアウト秒数 |
 | `REQUEST_RETRY_COUNT` | `1` | 失敗時のリトライ回数 |
+| `MARKET_REQUEST_INTERVAL_SECONDS` | `0` | マーケットAPIを複数対象へ連続実行するときの待機秒数 |
 
 ### 6.3 `.env` 読み込みルール
 
@@ -381,6 +383,7 @@ class Settings:
 | `SUMMARY_MAX_LENGTH` | `1` 以上の整数 | Phase 3 と同じく継続不可エラーとして停止する |
 | `REQUEST_TIMEOUT_SECONDS` | `1` 以上の整数 | デフォルト `10` |
 | `REQUEST_RETRY_COUNT` | `0` 以上の整数 | デフォルト `1` |
+| `MARKET_REQUEST_INTERVAL_SECONDS` | `0` 以上の整数 | デフォルト `0` |
 | RSS URL | `http://` または `https://` | 不正URLを除外し、`WARNING F-01` / `F-02` |
 
 ## 7. HTTP共通処理設計

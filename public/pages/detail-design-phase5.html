@@ -33,7 +33,7 @@
       <h1>Morning News 詳細設計 Phase 5</h1>
       <ul class="deck-meta">
         <li>版: draft</li>
-        <li>更新日: 2026-05-26</li>
+        <li>更新日: 2026-05-27</li>
         <li>正本: docs/detail-design/詳細設計Phase 5.md</li>
         <li>対象: pytest追加</li>
       </ul>
@@ -235,7 +235,7 @@
         <div class="provider-grid">
           <section class="provider-card"><h3>RSS Provider</h3><p>正常RSS、HTML概要、日時欠損、title欠損、重複URL、HTTP失敗、limitを検証する。</p></section>
           <section class="provider-card"><h3>NewsAPI Provider</h3><p>Phase 5では未対応スタブのみ。通信せず、空配列と警告を返すことに限定する。</p></section>
-          <section class="provider-card"><h3>Alpha Vantage</h3><p>APIキー未設定、正常Quote、API制限Note、部分失敗、キー値マスクを検証する。</p></section>
+          <section class="provider-card"><h3>Alpha Vantage</h3><p>APIキー未設定、正常Quote、API制限Note、部分失敗、キー値マスク、連続取得間の待機を検証する。</p></section>
           <section class="provider-card"><h3>HTTP Client</h3><p><code>sanitize_url()</code>、200応答、JSON解析失敗、404、Timeout、リトライを確認する。</p></section>
           <section class="provider-card"><h3>マスク対象</h3><p><code>apikey</code>、<code>api_key</code>、<code>token</code>、<code>access_token</code> を <code>***</code> に置換する。</p></section>
           <section class="provider-card"><h3>後続任意</h3><p>NewsAPIの実Provider化、GDELT、GNews、実API任意E2EはPhase 5の外に置く。</p></section>

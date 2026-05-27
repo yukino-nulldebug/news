@@ -33,7 +33,7 @@
       <h1>Morning News 詳細設計 Phase 6</h1>
       <ul class="deck-meta">
         <li>版: draft</li>
-        <li>更新日: 2026-05-26</li>
+        <li>更新日: 2026-05-27</li>
         <li>正本: docs/detail-design/詳細設計Phase 6.md</li>
         <li>対象: README・サンプルレポート整備</li>
       </ul>
@@ -176,7 +176,7 @@
           <section class="env-card"><h3>Execution</h3><p><code>APP_MODE=sample</code> を既定として、APIキーなし確認を優先する。</p></section>
           <section class="env-card"><h3>News</h3><p><code>NEWS_PROVIDER</code>、RSS URL、<code>NEWS_LIMIT</code>、<code>SUMMARY_MAX_LENGTH</code>。</p></section>
           <section class="env-card"><h3>Market</h3><p><code>MARKET_PROVIDER</code>、APIキー欄、Alpha Vantage endpoint、FX設定。</p></section>
-          <section class="env-card"><h3>Output / Request</h3><p><code>REPORT_DIR</code>、<code>LOG_DIR</code>、timeout、retry回数。</p></section>
+          <section class="env-card"><h3>Output / Request</h3><p><code>REPORT_DIR</code>、<code>LOG_DIR</code>、timeout、retry回数、マーケットAPI取得間隔。</p></section>
         </div>
         <div class="code-preview">
           <pre><code># execution mode
@@ -198,7 +198,12 @@ MARKET_API_ENDPOINT=https://www.alphavantage.co/query
 
 # output
 REPORT_DIR=reports
-LOG_DIR=logs</code></pre>
+LOG_DIR=logs
+
+# external request
+REQUEST_TIMEOUT_SECONDS=10
+REQUEST_RETRY_COUNT=4
+MARKET_REQUEST_INTERVAL_SECONDS=2</code></pre>
         </div>
       </article>
 

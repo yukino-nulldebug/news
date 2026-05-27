@@ -33,7 +33,7 @@
       <h1>Morning News 基本設計</h1>
       <ul class="deck-meta">
         <li>版: draft</li>
-        <li>更新日: 2026-05-19</li>
+        <li>更新日: 2026-05-27</li>
         <li>正本: docs/basic-design/基本設計.md</li>
         <li>関連: docs/requirements/要件定義.md</li>
       </ul>
@@ -569,14 +569,15 @@ LOG_DIR=logs
 NEWS_LIMIT=5
 SUMMARY_MAX_LENGTH=120
 REQUEST_TIMEOUT_SECONDS=10
-REQUEST_RETRY_COUNT=1</code></pre>
+REQUEST_RETRY_COUNT=1
+MARKET_REQUEST_INTERVAL_SECONDS=0</code></pre>
           </div>
           <section class="panel">
             <h3>設定方針</h3>
             <ul>
               <li><code>APP_MODE</code> 未設定時は <code>sample</code></li>
               <li>APIキーは空でも公開リポジトリとして成立する</li>
-              <li>出力先、件数、文字数、タイムアウト、リトライ回数は環境変数で調整可能にする</li>
+              <li>出力先、件数、文字数、タイムアウト、リトライ回数、マーケットAPIの連続取得間隔は環境変数で調整可能にする</li>
               <li>APIキーや認証ヘッダーはログ・レポートへ出力しない</li>
             </ul>
           </section>

@@ -17,6 +17,7 @@ NEWS_LIMIT = 5
 SUMMARY_MAX_LENGTH = 120
 REQUEST_TIMEOUT_SECONDS = 10
 REQUEST_RETRY_COUNT = 1
+MARKET_REQUEST_INTERVAL_SECONDS = 0
 MARKET_API_ENDPOINT = "https://www.alphavantage.co/query"
 JST = ZoneInfo("Asia/Tokyo")
 SUPPORTED_APP_MODES = {"sample", "api"}
@@ -65,6 +66,7 @@ class Settings:
     summary_max_length: int
     request_timeout_seconds: int
     request_retry_count: int
+    market_request_interval_seconds: int
     timezone: ZoneInfo
     target_date: date
     settings_warnings: tuple[str, ...]
@@ -253,6 +255,12 @@ def load_settings() -> Settings:
         0,
         warnings,
     )
+    market_request_interval_seconds = _parse_int(
+        "MARKET_REQUEST_INTERVAL_SECONDS",
+        MARKET_REQUEST_INTERVAL_SECONDS,
+        0,
+        warnings,
+    )
     common_rss_urls = _parse_csv_urls("NEWS_RSS_URLS", warnings)
     news_jp_rss_urls = _parse_csv_urls("NEWS_JP_RSS_URLS", warnings) or common_rss_urls
     news_global_rss_urls = _parse_csv_urls("NEWS_GLOBAL_RSS_URLS", warnings)
@@ -282,6 +290,7 @@ def load_settings() -> Settings:
         summary_max_length=summary_max_length,
         request_timeout_seconds=request_timeout_seconds,
         request_retry_count=request_retry_count,
+        market_request_interval_seconds=market_request_interval_seconds,
         timezone=JST,
         target_date=now.date(),
         settings_warnings=tuple(warnings),

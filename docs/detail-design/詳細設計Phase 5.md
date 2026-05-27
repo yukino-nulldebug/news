@@ -449,6 +449,7 @@ NewsAPI の実Provider化と取得テストは後続任意タスクで扱う。
 | `_fetch_target()` | fxで通貨ペア不足 | recoverableな `ExternalDataError` |
 | `fetch_alpha_vantage_markets()` | 一部指標失敗 | 成功分と警告を返す |
 | `fetch_alpha_vantage_markets()` | 例外メッセージにAPIキー | 警告内では `***` にマスクされる |
+| `fetch_alpha_vantage_markets()` | `MARKET_REQUEST_INTERVAL_SECONDS=2` | 複数指標の取得間で `sleep(2)` が呼ばれる |
 
 ### 8.4 HTTP Client
 
@@ -524,6 +525,7 @@ NewsAPI の実Provider化と取得テストは後続任意タスクで扱う。
 | `NEWS_LIMIT=abc` | 既定値にフォールバックし警告 |
 | `REQUEST_TIMEOUT_SECONDS=0` | 既定値にフォールバックし警告 |
 | `REQUEST_RETRY_COUNT=-1` | 既定値にフォールバックし警告 |
+| `MARKET_REQUEST_INTERVAL_SECONDS=-1` | 既定値にフォールバックし警告 |
 | 不正RSS URL | 該当URLを除外し警告 |
 
 ### 10.3 保存異常
