@@ -18,6 +18,206 @@
     </header>
 
     <main class="deck">
+      <article class="slide slide-tall portfolio-hero">
+        <div class="hero-copy">
+          <p class="slide-index">Portfolio Summary</p>
+          <h2>外部データ連携を、公開できるCLIバッチとして仕上げたプロジェクト</h2>
+          <p class="lead">
+            RSS/APIから国内外ニュースとマーケット情報を取得し、Markdownレポートへ保存するPythonアプリです。
+            見せたい力は、機能の多さではなく、再現性、失敗時の扱い、ログ、秘密情報保護、テストまで含めて小さなシステムを完成させる力です。
+          </p>
+          <ul class="portfolio-tags" aria-label="技術タグ">
+            <li>Python CLI</li>
+            <li>RSS/API</li>
+            <li>Markdown output</li>
+            <li>pytest 85 tests</li>
+            <li>GitHub Actions</li>
+            <li>Secret masking</li>
+            <li>AI-assisted dev</li>
+          </ul>
+        </div>
+
+        <div class="portfolio-stats" aria-label="プロジェクト概要">
+          <section>
+            <span class="stat-label">Standard path</span>
+            <strong>sample mode</strong>
+            <p>APIキーなしで第三者が動作確認できる。</p>
+          </section>
+          <section>
+            <span class="stat-label">Failure policy</span>
+            <strong>warning / exit code</strong>
+            <p>欠損、部分失敗、全滅を同じ成功に見せない。</p>
+          </section>
+          <section>
+            <span class="stat-label">Regression</span>
+            <strong>unit + integration + security</strong>
+            <p>取得、整形、計算、保存、マスク処理をテストする。</p>
+          </section>
+        </div>
+
+        <section class="portfolio-section">
+          <div class="section-heading">
+            <p class="slide-index">What to Review</p>
+            <h3>評価してほしい実装力</h3>
+          </div>
+          <div class="capability-grid">
+            <section class="capability-card capability-repro">
+              <span class="capability-label">01 再現性</span>
+              <h4>APIキーなしで確認できる実行経路</h4>
+              <p><code>sample</code> / <code>api</code> を環境変数で切り替え、未設定時は安全にサンプルで起動する。</p>
+              <a href="https://github.com/yukino-nulldebug/news/blob/main/morning-news/src/config/settings.py">settings.py</a>
+            </section>
+            <section class="capability-card capability-api">
+              <span class="capability-label">02 外部依存</span>
+              <h4>timeout、retry、rate limitを設定化</h4>
+              <p>RSS/API、Alpha Vantage、Providerシンボル差分をモジュール内に閉じ込める。</p>
+              <a href="https://github.com/yukino-nulldebug/news/blob/main/morning-news/src/market/providers/alpha_vantage.py">alpha_vantage.py</a>
+            </section>
+            <section class="capability-card capability-failure">
+              <span class="capability-label">03 失敗設計</span>
+              <h4>部分失敗と全滅を分けて扱う</h4>
+              <p>欠損値は <code>N/A</code> と警告、外部データ全滅は終了コード <code>2</code> として明示する。</p>
+              <a href="https://github.com/yukino-nulldebug/news/blob/main/morning-news/main.py">main.py</a>
+            </section>
+            <section class="capability-card capability-security">
+              <span class="capability-label">04 公開安全性</span>
+              <h4>秘密情報をログ・レポートへ出さない</h4>
+              <p><code>.env</code> はGit管理外にし、APIキーや認証ヘッダーはマスクして出力する。</p>
+              <a href="https://github.com/yukino-nulldebug/news/blob/main/morning-news/tests/security/test_secret_masking.py">security tests</a>
+            </section>
+            <section class="capability-card capability-quality">
+              <span class="capability-label">05 品質保証</span>
+              <h4>仕様変更を回帰テストで固定する</h4>
+              <p>unit、integration、provider、securityの観点でpytestを分け、CIで自動確認する。</p>
+              <a href="https://github.com/yukino-nulldebug/news/blob/main/.github/workflows/tests.yml">tests.yml</a>
+            </section>
+          </div>
+        </section>
+
+        <section class="portfolio-section ai-workflow">
+          <div class="section-heading">
+            <p class="slide-index">AI-Assisted Development</p>
+            <h3>AIを使ってコードを書き、レビューで品質を上げる進め方</h3>
+          </div>
+          <p class="section-note">
+            AIは設計整理、実装案、コードレビュー、テスト観点の洗い出しに使い、採用する仕様、安全性、最終差分は自分で判断しました。
+            「AIに作らせた」ではなく、AIを開発工程に組み込み、検証可能なコードへ落とす力を見せる構成です。
+          </p>
+          <div class="ai-grid">
+            <section class="ai-card">
+              <span class="capability-label">Prompt</span>
+              <h4>要件を実装単位へ分解</h4>
+              <p>朝の情報収集という課題から、実行モード、データ構造、例外方針、受け入れ条件へ落とし込む。</p>
+            </section>
+            <section class="ai-card">
+              <span class="capability-label">Build</span>
+              <h4>AI支援でコードとテストを作成</h4>
+              <p>Provider、設定、レポート生成、pytestを小さな単位で実装し、差分を確認しながら採用する。</p>
+            </section>
+            <section class="ai-card">
+              <span class="capability-label">Review</span>
+              <h4>AIレビューを品質ゲートにする</h4>
+              <p>外部データ全滅時の判定漏れなど、仕様の穴をレビューで見つけ、修正方針へ変換する。</p>
+            </section>
+            <section class="ai-card">
+              <span class="capability-label">Verify</span>
+              <h4>指摘を回帰テストで固定</h4>
+              <p>修正だけで終わらせず、異常系テストを追加して <code>pytest</code> とCIで確認できる状態にする。</p>
+            </section>
+          </div>
+          <div class="table-wrap ai-responsibility-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>AIで加速したこと</th>
+                  <th>自分で判断したこと</th>
+                  <th>成果物</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>要件、設計、実装方針の候補出し</td>
+                  <td>APIキーなしで見せるため <code>sample</code> モードを標準にする判断</td>
+                  <td>要件定義、基本設計、<code>settings.py</code></td>
+                </tr>
+                <tr>
+                  <td>コードレビューとセキュリティ観点の洗い出し</td>
+                  <td>外部データ全滅を成功扱いにしない仕様判断</td>
+                  <td><code>main.py</code>、<code>test_api_mode.py</code></td>
+                </tr>
+                <tr>
+                  <td>READMEやHTML表紙の構成案</td>
+                  <td>何を評価してほしいかを5軸に整理する判断</td>
+                  <td><code>public/index.html</code>、<code>docs/portfolio-summary.md</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="portfolio-section">
+          <div class="section-heading">
+            <p class="slide-index">Design Decisions</p>
+            <h3>設計判断と実装の証拠</h3>
+          </div>
+          <div class="table-wrap evidence-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>課題</th>
+                  <th>判断</th>
+                  <th>実装・確認ポイント</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>APIキーがない閲覧者が試せない</td>
+                  <td><code>sample</code> モードを標準経路にする</td>
+                  <td><code>APP_MODE</code> 未設定時の設定読み込み、サンプルJSON、サンプルレポート</td>
+                </tr>
+                <tr>
+                  <td>外部取得失敗を成功に見せてしまう</td>
+                  <td>部分失敗は警告、全滅は終了コード <code>2</code></td>
+                  <td><code>build_report_data()</code> と <code>test_api_mode.py</code></td>
+                </tr>
+                <tr>
+                  <td>無料APIの制限に当たりやすい</td>
+                  <td>連続取得間隔を <code>.env</code> で調整可能にする</td>
+                  <td><code>MARKET_REQUEST_INTERVAL_SECONDS</code> とProviderテスト</td>
+                </tr>
+                <tr>
+                  <td>公開リポジトリで秘密情報が漏れる</td>
+                  <td>URL、警告、ログ、レポートの値をマスクする</td>
+                  <td><code>sanitize_url()</code>、<code>sanitize_text()</code>、security tests</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="portfolio-section artifact-preview">
+          <div class="section-heading">
+            <p class="slide-index">Artifacts</p>
+            <h3>実物で確認できるもの</h3>
+          </div>
+          <div class="artifact-grid">
+            <section class="artifact-card">
+              <h4>実行経路</h4>
+              <pre><code>APP_MODE=sample python3 main.py
+python3 -m pytest</code></pre>
+            </section>
+            <section class="artifact-card">
+              <h4>レポート</h4>
+              <p><a href="https://github.com/yukino-nulldebug/news/blob/main/morning-news/reports/sample-report.md">reports/sample-report.md</a> で、ニュース、市況、警告、注意事項を確認できます。</p>
+            </section>
+            <section class="artifact-card">
+              <h4>レビュー補助</h4>
+              <p>要件定義、基本設計、詳細設計をHTML化し、実装意図とテスト観点へ辿れるようにしています。</p>
+            </section>
+          </div>
+        </section>
+      </article>
+
       <article class="slide cover">
         <p class="slide-index">Docs</p>
         <h2>ドキュメント一覧</h2>

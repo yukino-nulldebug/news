@@ -6,6 +6,7 @@ from src.utils.exceptions import ReportGenerationError
 from src.utils.http_client import sanitize_text
 
 DISCLAIMER = "本レポートは情報提供を目的としており、投資助言ではありません。"
+MARKET_COMMENT_DISCLAIMER = "本コメントは情報提供であり投資助言ではありません。"
 FEATURE_ID = "F-06"
 PROCESS_NAME = "report.generator"
 REQUIRED_REPORT_KEYS = (
@@ -170,6 +171,7 @@ def generate_report(report_data: dict) -> str:
             sections.extend(f"- {comment}" for comment in market_comments)
         else:
             sections.append("- 市況コメントを生成できませんでした。")
+        sections.append(f"- {MARKET_COMMENT_DISCLAIMER}")
 
         sections.extend(["", "## 6. 注意事項", "", report_data["disclaimer"]])
 

@@ -8,7 +8,7 @@
   "items": [
     {
       "symbol": "NIKKEI225",
-      "name": "日経平均",
+      "name": "日本市場参考指標",
       "current_value": 38500.25,
       "previous_close": 38200.0,
       "unit": "points",
@@ -16,7 +16,7 @@
     },
     {
       "symbol": "SP500",
-      "name": "S&P500",
+      "name": "米国市場参考指標",
       "current_value": 5250.1,
       "previous_close": 5200.0,
       "unit": "points",

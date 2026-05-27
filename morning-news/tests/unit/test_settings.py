@@ -79,3 +79,10 @@ def test_load_settings_reads_market_request_interval_seconds(monkeypatch, patche
     loaded = settings_module.load_settings()
 
     assert loaded.market_request_interval_seconds == 2
+
+
+def test_load_settings_uses_reference_market_target_names(patched_settings_dirs):
+    loaded = settings_module.load_settings()
+
+    assert loaded.market_targets[0].name == "日本市場参考指標"
+    assert loaded.market_targets[1].name == "米国市場参考指標"

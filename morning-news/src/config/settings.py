@@ -206,14 +206,14 @@ def _build_market_targets() -> tuple[MarketTarget, ...]:
     return (
         MarketTarget(
             symbol="NIKKEI225",
-            name="日経平均",
+            name="日本市場参考指標",
             kind="index",
             provider_symbol=market_symbol_nikkei225,
             unit="points",
         ),
         MarketTarget(
             symbol="SP500",
-            name="S&P500",
+            name="米国市場参考指標",
             kind="index",
             provider_symbol=market_symbol_sp500,
             unit="points",

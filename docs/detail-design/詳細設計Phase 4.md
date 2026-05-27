@@ -25,7 +25,7 @@ Phase 4 では、これまで `sample` 固定だった入力データ取得を `
 | 実行モード分岐 | `APP_MODE=sample` と `APP_MODE=api` でデータ取得経路を切り替える |
 | RSSニュース取得 | RSS/Atomフィードから国内・海外ニュースを取得し、`NewsItem` に正規化する |
 | ニュースAPI拡張口 | `NEWS_PROVIDER` 設定により、後続でニュースAPI取得を差し替え可能にする。Phase 4 の必須実装はRSS Providerとする |
-| マーケットAPI取得 | 外部マーケットAPIから日経平均、S&P500、USD/JPY相当のデータを取得し、`MarketItem` に正規化する |
+| マーケットAPI取得 | 外部マーケットAPIから日本市場参考指標、米国市場参考指標、USD/JPY相当のデータを取得し、`MarketItem` に正規化する |
 | HTTP共通処理 | タイムアウト、リトライ、HTTPステータス確認、レスポンス解析、機密情報マスクを共通化する |
 | 外部データ正規化 | 取得元ごとの差異を吸収し、既存の `format_news_items()` / `calculate_market_changes()` へ渡せる形にする |
 | 部分失敗時の継続 | 一部フィード/API失敗時は警告を残し、取得できた範囲でレポート生成を継続する |
@@ -144,7 +144,7 @@ Phase 4 では、`MARKET_PROVIDER` によって取得元を切り替えられる
 | `marketstack` | 後続の差し替え候補 |
 
 マーケットAPIは、指標コードの表記や取得可能な項目がProviderごとに異なる。
-そのため、日経平均、S&P500、USD/JPYの論理IDはアプリ側で固定し、Provider側のシンボルは `.env` で指定できるようにする。
+そのため、日本市場参考指標、米国市場参考指標、USD/JPYの論理IDはアプリ側で固定し、Provider側のシンボルは `.env` で指定できるようにする。
 
 ### 4.3 Phase 4 で扱う最低対象
 
@@ -152,12 +152,12 @@ Phase 4 では、`MARKET_PROVIDER` によって取得元を切り替えられる
 | --- | --- | --- | --- |
 | 国内ニュース | `domestic` | 国内ニュース | RSS/ニュースAPI |
 | 海外ニュース | `global` | 海外ニュース | RSS/ニュースAPI |
-| 日経平均 | `NIKKEI225` | 日経平均 | マーケットAPI |
-| S&P500 | `SP500` | S&P500 | マーケットAPI |
+| 日本市場参考指標 | `NIKKEI225` | APIで取得可能な日本市場参考ETFまたは代替シンボル | マーケットAPI |
+| 米国市場参考指標 | `SP500` | APIで取得可能な米国市場参考ETFまたは代替シンボル | マーケットAPI |
 | USD/JPY | `USDJPY` | USD/JPY | 為替API |
 
 Phase 4 では、マーケットAPIの外部取得確認は最低1指標以上を必須とする。
-日経平均、S&P500、USD/JPYの3指標すべてを外部APIで安定取得できることは、Phase 4 単体の必須完了条件にはしない。
+日本市場参考指標、米国市場参考指標、USD/JPYの3指標すべてを外部APIで安定取得できることは、Phase 4 単体の必須完了条件にはしない。
 ただし、MVP全体では3指標を扱う要件があるため、Provider設定とデータ構造は3指標に対応できる形で用意する。
 
 ## 5. ファイル構成
@@ -294,8 +294,8 @@ MARKET_REQUEST_INTERVAL_SECONDS=0
 | `MARKET_PROVIDER` | `alpha_vantage` | マーケット取得Provider |
 | `MARKET_API_KEY` | 空 | マーケットAPIキー |
 | `MARKET_API_ENDPOINT` | Provider既定値 | マーケットAPIのエンドポイント |
-| `MARKET_SYMBOL_NIKKEI225` | 空 | Provider側の日経平均シンボル |
-| `MARKET_SYMBOL_SP500` | 空 | Provider側のS&P500シンボル |
+| `MARKET_SYMBOL_NIKKEI225` | 空 | Provider側の日本市場参考指標シンボル |
+| `MARKET_SYMBOL_SP500` | 空 | Provider側の米国市場参考指標シンボル |
 | `MARKET_FX_BASE` | `USD` | 為替の基準通貨 |
 | `MARKET_FX_QUOTE` | `JPY` | 為替の相手通貨 |
 | `REPORT_DIR` | `reports` | レポート出力先 |
@@ -607,7 +607,7 @@ flowchart TD
 | 項目 | 型 | 必須 | Phase 4 の生成ルール |
 | --- | --- | --- | --- |
 | `symbol` | `str` | 必須 | `NIKKEI225`, `SP500`, `USDJPY` |
-| `name` | `str` | 必須 | `日経平均`, `S&P500`, `USD/JPY` |
+| `name` | `str` | 必須 | `日本市場参考指標`, `米国市場参考指標`, `USD/JPY` |
 | `current_value` | `int` / `float` | 必須 | APIの最新値 |
 | `previous_close` | `int` / `float` | 必須 | APIの前営業日終値、またはAPIのchangeから逆算 |
 | `unit` | `str` | 任意 | `points`, `yen` など |
@@ -626,14 +626,14 @@ Phase 3 の設計では `previous_close` が実質必須であるため、不完
 [
     {
         "symbol": "NIKKEI225",
-        "name": "日経平均",
+        "name": "日本市場参考指標",
         "kind": "index",
         "provider_symbol": market_symbol_nikkei225,
         "unit": "points",
     },
     {
         "symbol": "SP500",
-        "name": "S&P500",
+        "name": "米国市場参考指標",
         "kind": "index",
         "provider_symbol": market_symbol_sp500,
         "unit": "points",
@@ -649,7 +649,8 @@ Phase 3 の設計では `previous_close` が実質必須であるため、不完
 ]
 ```
 
-日経平均とS&P500のProviderシンボルは、利用するAPIによって表記が異なるため `.env` で指定する。
+日本市場参考指標と米国市場参考指標のProviderシンボルは、利用するAPIによって表記が異なるため `.env` で指定する。
+Alpha Vantage無料枠では指数そのものを直接取得できない場合があるため、参考ETFや取得可能な代替シンボルの利用を想定する。
 Providerシンボルが空の場合、その指標は取得せず警告を返す。
 上記の `market_symbol_nikkei225` などは、`_build_market_targets()` 内で環境変数から読み込んだローカル値を表す。
 
@@ -659,7 +660,7 @@ Providerシンボルが空の場合、その指標は取得せず警告を返す
 APIの具体的なシンボルやレスポンスキーはProvider内に閉じ込め、呼び出し元には `MarketItem` だけを返す。
 
 Phase 4 では、Alpha Vantage Provider の構造を作り、取得できる指標のみを対象にする。
-マーケットAPI取得の必須確認対象は最低1指標以上とし、日経平均、S&P500、USD/JPYの3指標すべての取得成功はPhase 4単体の完了条件にしない。
+マーケットAPI取得の必須確認対象は最低1指標以上とし、日本市場参考指標、米国市場参考指標、USD/JPYの3指標すべての取得成功はPhase 4単体の完了条件にしない。
 3指標の安定取得確認は、API選定やシンボル確認を含めて後続フェーズまたはMVP仕上げ時に行う。
 
 | 関数 | 入力 | 出力 | 処理内容 |

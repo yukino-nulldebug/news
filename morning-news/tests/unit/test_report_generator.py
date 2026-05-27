@@ -4,7 +4,12 @@ import pytest
 
 from src.market.calculator import calculate_market_changes
 from src.news.formatter import format_news_items
-from src.report.generator import DISCLAIMER, generate_market_comments, generate_report
+from src.report.generator import (
+    DISCLAIMER,
+    MARKET_COMMENT_DISCLAIMER,
+    generate_market_comments,
+    generate_report,
+)
 from src.utils.exceptions import ReportGenerationError
 
 
@@ -37,6 +42,7 @@ def test_generate_report_contains_required_sections(
     assert "## 3. 海外ニュース" in markdown
     assert "## 4. マーケット情報" in markdown
     assert "## 5. 市況コメント" in markdown
+    assert MARKET_COMMENT_DISCLAIMER in markdown
     assert DISCLAIMER in markdown
 
 

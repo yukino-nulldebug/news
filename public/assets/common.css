@@ -196,6 +196,203 @@ body {
   max-width: 72ch;
 }
 
+.portfolio-hero {
+  gap: var(--space-6);
+}
+
+.hero-copy {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 920px;
+}
+
+.portfolio-hero h2 {
+  max-width: 880px;
+  font-size: var(--font-size-heading-lg);
+}
+
+.portfolio-tags,
+.portfolio-stats,
+.capability-grid,
+.ai-grid,
+.artifact-grid {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.portfolio-tags {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.portfolio-tags li {
+  margin: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-subtle);
+  padding: var(--space-2) var(--space-3);
+  text-align: center;
+  font-size: var(--font-size-caption);
+  font-weight: 700;
+  line-height: var(--line-height-ui);
+}
+
+.portfolio-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.portfolio-stats section,
+.capability-card,
+.ai-card,
+.artifact-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  padding: var(--space-4);
+}
+
+.portfolio-stats section {
+  border-left: 4px solid var(--color-border-strong);
+}
+
+.stat-label,
+.capability-label {
+  display: block;
+  margin-bottom: var(--space-1);
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: var(--line-height-ui);
+  text-transform: uppercase;
+}
+
+.portfolio-stats strong {
+  display: block;
+  font-size: var(--font-size-heading-sm);
+  line-height: var(--line-height-heading);
+}
+
+.portfolio-stats p,
+.capability-card p,
+.ai-card p,
+.artifact-card p {
+  margin: var(--space-2) 0 0;
+  color: var(--color-muted);
+  font-size: var(--font-size-caption);
+  line-height: 1.6;
+}
+
+.portfolio-section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.section-heading {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.section-heading h3 {
+  margin: 0;
+  font-size: var(--font-size-heading-md);
+  line-height: var(--line-height-heading);
+}
+
+.capability-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.ai-workflow {
+  border: 1px solid var(--color-border);
+  border-left: 4px solid #5e477e;
+  border-radius: var(--radius-md);
+  background: #faf9fc;
+  padding: var(--space-5);
+}
+
+.ai-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.capability-card {
+  display: flex;
+  min-height: 230px;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.capability-card h4,
+.ai-card h4,
+.artifact-card h4 {
+  margin: 0;
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-heading);
+}
+
+.capability-card a {
+  margin-top: auto;
+  color: var(--color-focus);
+  font-size: var(--font-size-caption);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.capability-card a:hover,
+.artifact-card a:hover {
+  text-decoration: underline;
+}
+
+.capability-repro {
+  border-top: 4px solid #2f6f4e;
+}
+
+.capability-api {
+  border-top: 4px solid #6d5a21;
+}
+
+.capability-failure {
+  border-top: 4px solid #9a4c1e;
+}
+
+.capability-security {
+  border-top: 4px solid #5e477e;
+}
+
+.capability-quality {
+  border-top: 4px solid #1d6280;
+}
+
+.evidence-table table {
+  min-width: 840px;
+}
+
+.ai-responsibility-table table {
+  min-width: 860px;
+}
+
+.artifact-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.artifact-card {
+  background: var(--color-surface-subtle);
+}
+
+.artifact-card pre {
+  margin: var(--space-2) 0 0;
+  overflow: auto;
+}
+
+.artifact-card pre code {
+  display: block;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  white-space: pre;
+}
+
 .section-note {
   margin: 0;
   color: var(--color-muted);
@@ -721,6 +918,15 @@ code {
     padding: var(--space-4);
   }
 
+  .portfolio-tags {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .capability-grid,
+  .ai-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .slide {
     aspect-ratio: auto;
     min-height: unset;
@@ -749,6 +955,8 @@ code {
   .three-col,
   .highlights,
   .summary-grid,
+  .portfolio-stats,
+  .artifact-grid,
   .doc-list,
   .mode-map {
     grid-template-columns: 1fr;
@@ -794,6 +1002,12 @@ code {
 @media (max-width: 640px) {
   .pipeline,
   .phase-roadmap {
+    grid-template-columns: 1fr;
+  }
+
+  .portfolio-tags,
+  .capability-grid,
+  .ai-grid {
     grid-template-columns: 1fr;
   }
 }

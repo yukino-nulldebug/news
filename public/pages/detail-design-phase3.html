@@ -277,7 +277,7 @@
           <section class="equation-card">
             <strong>前日比</strong>
             <p class="equation">change = current_value - previous_close</p>
-            <p class="number-result">日経平均: 38500.25 - 38200.00 = <code>300.25</code></p>
+            <p class="number-result">日本市場参考指標: 38500.25 - 38200.00 = <code>300.25</code></p>
           </section>
           <section class="equation-card">
             <strong>変化率</strong>
@@ -296,7 +296,7 @@
               <tr><th>指標</th><th>現在値</th><th>前日終値</th><th>前日比</th><th>変化率</th></tr>
             </thead>
             <tbody>
-              <tr><td>日経平均</td><td><code>38500.25</code></td><td><code>38200.00</code></td><td><code>300.25</code></td><td><code>0.79</code></td></tr>
+              <tr><td>日本市場参考指標</td><td><code>38500.25</code></td><td><code>38200.00</code></td><td><code>300.25</code></td><td><code>0.79</code></td></tr>
               <tr><td>S&amp;P500</td><td><code>5250.10</code></td><td><code>5200.00</code></td><td><code>50.10</code></td><td><code>0.96</code></td></tr>
               <tr><td>USD/JPY</td><td><code>155.20</code></td><td><code>154.80</code></td><td><code>0.40</code></td><td><code>0.26</code></td></tr>
             </tbody>
@@ -308,20 +308,20 @@
         <p class="slide-index">08</p>
         <h2>5.3 <code>previous_close</code> の扱い</h2>
         <p class="section-note">
-          基本設計では任意項目だが、Phase 3 の変化率計算では実質必須項目として扱う。
+          欠損や型不正があっても、該当指標だけを N/A としてレポート生成を継続する。
         </p>
         <div class="decision-grid">
-          <section class="decision-card"><strong>欠損</strong><p>計算前提を満たさない。</p><code>MarketCalculationError</code></section>
-          <section class="decision-card"><strong>非数値</strong><p>文字列、<code>None</code>、<code>bool</code> は不可。</p><code>ERROR F-05</code></section>
+          <section class="decision-card"><strong>欠損</strong><p>計算前提を満たさないため N/A 表示にする。</p><code>WARNING F-05</code></section>
+          <section class="decision-card"><strong>非数値</strong><p>文字列、<code>None</code>、<code>bool</code> は計算不可。</p><code>WARNING F-05</code></section>
           <section class="decision-card"><strong>0</strong><p>割り算できないが、レポートは継続する。</p><code>WARNING F-05</code></section>
           <section class="decision-card"><strong>数値かつ0以外</strong><p>前日比・変化率を計算する。</p><code>success</code></section>
         </div>
         <div class="mermaid-panel">
           <pre class="mermaid">flowchart TD
     A["previous_close を確認"] --> B{"欠損?"}
-    B -->|Yes| E["MarketCalculationError / exit 1"]
+    B -->|Yes| W["change=None / change_rate=None / WARNING F-05"]
     B -->|No| C{"数値? bool は除外"}
-    C -->|No| E
+    C -->|No| W
     C -->|Yes| D{"0?"}
     D -->|Yes| W["change=None / change_rate=None / WARNING F-05"]
     D -->|No| S["change と change_rate を計算"]</pre>
@@ -347,7 +347,7 @@
             <div class="code-preview">
               <pre><code>| 指標 | 現在値 | 前日比 | 変化率 |
 | --- | ---: | ---: | ---: |
-| 日経平均 | 38500.25 points | +300.25 | +0.79% |
+| 日本市場参考指標 | 38500.25 points | +300.25 | +0.79% |
 | S&amp;P500 | 5250.10 points | +50.10 | +0.96% |
 | USD/JPY | 155.20 yen | +0.40 | +0.26% |</code></pre>
             </div>
@@ -457,9 +457,9 @@
         <div class="mermaid-panel">
           <pre class="mermaid">stateDiagram-v2
     [*] --> Running
-    Running --> Warning: summary empty / previous_close zero
+    Running --> Warning: summary empty / market calculation unavailable
     Warning --> Saved: 代替値で継続
-    Running --> Failed: SummaryFormatError / MarketCalculationError
+    Running --> Failed: SummaryFormatError / ReportGenerationError
     Saved --> Exit0: status warning or success
     Failed --> Exit1: status failed
     Exit0 --> [*]

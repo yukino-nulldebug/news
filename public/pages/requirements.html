@@ -54,21 +54,26 @@
       <article class="slide" id="slide-02">
         <p class="slide-index">02</p>
         <h2>ポートフォリオで示すこと</h2>
-        <div class="two-col">
+        <div class="three-col">
           <section class="panel">
-            <h3>設計力</h3>
+            <h3>再現性</h3>
             <ul>
-              <li>要件定義、機能分割、受け入れ条件を一貫して設計できる</li>
-              <li>ニュース取得、市況取得、Markdown出力の責務を分けて考えられる</li>
-              <li>投資助言と誤認されない情報設計ができる</li>
+              <li><code>sample</code> / <code>api</code> を分ける</li>
+              <li>APIキーなしでも第三者が確認できる</li>
             </ul>
           </section>
           <section class="panel">
-            <h3>実装・公開力</h3>
+            <h3>失敗設計</h3>
             <ul>
-              <li>API/RSS取得、データ整形、ログ記録を小さなアプリにまとめる</li>
-              <li>APIキーなしでも <code>sample</code> モードで動作確認できる</li>
-              <li><code>.env</code> やAPIキーを公開しないGitHub構成にする</li>
+              <li>欠損値は <code>N/A</code> と警告にする</li>
+              <li>外部データ全滅は終了コードで明示する</li>
+            </ul>
+          </section>
+          <section class="panel">
+            <h3>公開安全性</h3>
+            <ul>
+              <li><code>.env</code> やAPIキーを公開しない</li>
+              <li>ログ・レポートに秘密情報を出さない</li>
             </ul>
           </section>
         </div>
@@ -246,7 +251,7 @@
                 <td>F-04/F-05</td>
                 <td>MUST</td>
                 <td>市況取得・変化率計算</td>
-                <td>日経平均、S&amp;P500、USD/JPY の現在値・前日比・変化率を扱う。</td>
+                <td>日本市場参考指標、米国市場参考指標、USD/JPY の現在値・前日比・変化率を扱う。</td>
               </tr>
               <tr>
                 <td>F-06/F-08</td>

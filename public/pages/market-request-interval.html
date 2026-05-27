@@ -30,18 +30,30 @@
         <h2>背景</h2>
         <p class="lead">
           Alpha Vantage の無料枠では短時間の連続リクエストで制限に当たることがある。
-          複数のマーケット対象を取得するとき、各取得の間で待機できる設定を追加した。
+          <code>.env</code> に待機秒数を設定し、複数のマーケット対象を取得するときに各取得の間で待機できるようにする。
         </p>
-        <div class="summary-grid">
-          <section class="summary-card"><h3>timeout</h3><p><code>10s</code></p></section>
-          <section class="summary-card"><h3>retry</h3><p><code>4</code></p></section>
-          <section class="summary-card"><h3>market interval</h3><p><code>2s</code></p></section>
-        </div>
+      </article>
+
+      <article class="slide slide-tall">
+        <p class="slide-index">Settings</p>
+        <h2>設定</h2>
         <div class="code-preview">
           <pre><code># external request
 REQUEST_TIMEOUT_SECONDS=10
 REQUEST_RETRY_COUNT=4
 MARKET_REQUEST_INTERVAL_SECONDS=2</code></pre>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>設定</th><th>意味</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>REQUEST_TIMEOUT_SECONDS=10</code></td><td>1回のAPI通信を最大10秒待つ。</td></tr>
+              <tr><td><code>REQUEST_RETRY_COUNT=4</code></td><td>失敗時に最大4回リトライする。</td></tr>
+              <tr><td><code>MARKET_REQUEST_INTERVAL_SECONDS=2</code></td><td>マーケットAPIを連続取得するとき、各リクエストの間に2秒待つ。</td></tr>
+            </tbody>
+          </table>
         </div>
       </article>
 
@@ -56,9 +68,9 @@ MARKET_REQUEST_INTERVAL_SECONDS=2</code></pre>
             <tbody>
               <tr><td><code>morning-news/.env</code></td><td><code>MARKET_REQUEST_INTERVAL_SECONDS=2</code> を追加し、誤った単数形の変数名を置き換えた。</td></tr>
               <tr><td><code>morning-news/.env.example</code></td><td>Alpha Vantage向けの推奨外部取得設定を追加した。</td></tr>
-              <tr><td><code>src/config/settings.py</code></td><td><code>MARKET_REQUEST_INTERVAL_SECONDS</code> を読み込み、<code>Settings.market_request_interval_seconds</code> として保持する。</td></tr>
-              <tr><td><code>src/market/providers/alpha_vantage.py</code></td><td>複数ターゲット取得ループで、最後以外の取得後に <code>time.sleep()</code> する。</td></tr>
-              <tr><td><code>tests/</code></td><td>設定読み込みと待機処理のテストを追加した。</td></tr>
+              <tr><td><code>morning-news/src/config/settings.py</code></td><td><code>MARKET_REQUEST_INTERVAL_SECONDS</code> を読み込み、<code>Settings.market_request_interval_seconds</code> として保持する。</td></tr>
+              <tr><td><code>morning-news/src/market/providers/alpha_vantage.py</code></td><td>複数ターゲット取得ループで最後以外の取得後に <code>time.sleep()</code> する。</td></tr>
+              <tr><td><code>morning-news/tests/</code></td><td>設定読み込みと待機処理のテストを追加した。</td></tr>
             </tbody>
           </table>
         </div>
@@ -74,7 +86,7 @@ MARKET_REQUEST_INTERVAL_SECONDS=2</code></pre>
           </section>
           <section class="panel">
             <h3>制限に当たる場合</h3>
-            <p><code>MARKET_REQUEST_INTERVAL_SECONDS=5</code> へ増やして再実行する。</p>
+            <p>まず <code>MARKET_REQUEST_INTERVAL_SECONDS=5</code> へ増やして再実行する。</p>
           </section>
         </div>
         <p class="section-note">

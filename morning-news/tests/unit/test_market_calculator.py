@@ -31,8 +31,29 @@ def test_calculate_market_changes_adds_change_fields(sample_market_items):
     assert "change" not in sample_market_items[0]
 
 
-def test_calculate_market_changes_raises_when_required_key_is_missing(sample_market_items):
+def test_calculate_market_changes_removes_stale_warning(sample_market_items):
+    sample_market_items[0]["calculation_warning"] = "古い警告"
+
+    calculated = calculate_market_changes(sample_market_items)
+
+    assert "calculation_warning" not in calculated[0]
+
+
+def test_calculate_market_changes_marks_missing_key_as_warning(sample_market_items):
     del sample_market_items[0]["previous_close"]
 
-    with pytest.raises(MarketCalculationError):
-        calculate_market_changes(sample_market_items)
+    calculated = calculate_market_changes(sample_market_items)
+
+    assert calculated[0]["change"] is None
+    assert calculated[0]["change_rate"] is None
+    assert "previous_close が欠損" in calculated[0]["calculation_warning"]
+
+
+def test_calculate_market_changes_marks_invalid_number_as_warning(sample_market_items):
+    sample_market_items[0]["current_value"] = "100.0"
+
+    calculated = calculate_market_changes(sample_market_items)
+
+    assert calculated[0]["change"] is None
+    assert calculated[0]["change_rate"] is None
+    assert "数値でない" in calculated[0]["calculation_warning"]

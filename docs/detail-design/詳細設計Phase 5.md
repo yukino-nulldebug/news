@@ -323,7 +323,7 @@ Alpha Vantage Providerのテストで使う固定JSONを返す。
 | `calculate_change()` | `current_value` が文字列 | `MarketCalculationError` |
 | `calculate_change()` | `previous_close` が `bool` | `MarketCalculationError` |
 | `calculate_market_changes()` | 正常items | `change` と `change_rate` が追加される |
-| `calculate_market_changes()` | `previous_close` 欠損 | `MarketCalculationError` |
+| `calculate_market_changes()` | `previous_close` 欠損 | `change=None`、`change_rate=None`、警告情報が追加される |
 
 ### 7.3 `src/report/generator.py`
 
@@ -515,7 +515,7 @@ NewsAPI の実Provider化と取得テストは後続任意タスクで扱う。
 | `news_global.json` が壊れたJSON | `DataLoadError`、結合時は終了コード `2` |
 | `market.json` の `items` が配列でない | `DataValidationError`、結合時は終了コード `2` |
 | ニュース必須項目欠損 | 欠損項目名を含む `DataValidationError` |
-| マーケット数値項目が文字列 | 計算時に `MarketCalculationError`、結合時は終了コード `1` |
+| マーケット数値項目が文字列 | 結合時は警告付きで継続し、レポートでは `N/A` |
 
 ### 10.2 設定異常
 
@@ -620,7 +620,7 @@ Phase 5 は、以下を満たしたら完了とする。
 - Alpha Vantage Providerは、APIキー未設定、正常レスポンス、APIエラー、部分失敗、キー値マスクをテストしている。
 - `APP_MODE=sample` の結合テストで、レポート保存とログ出力を確認できる。
 - `APP_MODE=api` の結合テストで、モック外部データによる成功と全取得失敗時の終了コード `2` を確認できる。
-- `SUMMARY_MAX_LENGTH=0`、JSON欠損、マーケット数値不正、保存失敗の異常系がテストされている。
+- `SUMMARY_MAX_LENGTH=0`、JSON欠損、マーケット数値不正時の警告継続、保存失敗の異常系がテストされている。
 - APIキー、トークン、未マスク認証URLがログ・レポート・警告に出ないことをテストしている。
 - テスト実行中に既存の `reports/`、`logs/`、`sample_data/` を破壊的に変更しない。
 - READMEで案内できるテスト実行手順が確定している。

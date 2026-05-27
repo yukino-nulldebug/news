@@ -35,6 +35,14 @@ def _format_report_time(settings: Settings) -> str:
     return datetime.now(settings.timezone).strftime("%Y-%m-%d %H:%M JST")
 
 
+def _is_number(value) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _has_usable_market_data(items: list[dict]) -> bool:
+    return any(_is_number(item.get("current_value")) for item in items)
+
+
 def record_recoverable_warning(
     logger,
     result: dict,
@@ -187,13 +195,14 @@ def build_report_data(settings: Settings, logger, result: dict) -> dict:
     )
 
     for item in calculated_markets:
-        if item.get("change_rate") is None:
+        calculation_warning = item.get("calculation_warning")
+        if calculation_warning:
             record_recoverable_warning(
                 logger,
                 result,
                 "F-05",
                 "market.calculator",
-                f"{item['name']} は previous_close が 0 のため変化率を計算できませんでした",
+                calculation_warning,
             )
 
     market_comments = generate_market_comments(calculated_markets)
@@ -210,7 +219,7 @@ def build_report_data(settings: Settings, logger, result: dict) -> dict:
         settings.app_mode == "api"
         and not formatted_domestic_news
         and not formatted_global_news
-        and not calculated_markets
+        and not _has_usable_market_data(calculated_markets)
     ):
         raise DataLoadError(
             "apiモードで外部データを1件も取得できませんでした。",
