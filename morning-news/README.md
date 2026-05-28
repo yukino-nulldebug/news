@@ -298,7 +298,8 @@ reports/sample-report.md
 | 詳細設計 Phase 4 | `../docs/detail-design/詳細設計Phase 4.md` |
 | 詳細設計 Phase 5 | `../docs/detail-design/詳細設計Phase 5.md` |
 | 詳細設計 Phase 6 | `../docs/detail-design/詳細設計Phase 6.md` |
-| 変更メモ | `../docs/changes/2026-05-27-market-request-interval.md` |
+| 学習ログ | `../docs/learning/README.md` |
+| 学習ログ: API制限対応 | `../docs/learning/2026-05-27-api-rate-limit.md` |
 
 ## ポートフォリオとして見てほしいポイント
 
@@ -306,6 +307,7 @@ reports/sample-report.md
 - 部分失敗、欠損値、外部データ全滅を同じ成功に見せず、警告と終了コードで分けていること。
 - APIキー漏えい、認証ヘッダー、個人用URLなど、公開時に問題になりやすい点をテストしていること。
 - 設計、実装、テスト、READMEを分けて整備し、第三者が判断理由を追える形にしていること。
+- `../docs/learning/` に、問題、調査、実装、学びの流れで改善ログを残していること。
 
 ## 今後の改善予定
 
