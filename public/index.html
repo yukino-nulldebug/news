@@ -13,7 +13,7 @@
       <h1>Morning News</h1>
       <ul class="deck-meta">
         <li>要件定義・基本設計・詳細設計レビュー用HTML</li>
-        <li>更新日: 2026-05-27</li>
+        <li>更新日: 2026-05-31</li>
       </ul>
     </header>
 
@@ -155,6 +155,77 @@
           </div>
         </section>
 
+        <section class="portfolio-section learning-process">
+          <div class="section-heading">
+            <p class="slide-index">Learning Process</p>
+            <h3>学習プロセスと設計思考</h3>
+          </div>
+          <p class="section-note">
+            未知の課題を段階的に分解し、調査・設計・実装・検証を反復した過程を、設計資料とコードから追えるようにしています。
+            自己評価ではなく、要件定義、基本設計、詳細設計、実装、改善履歴のつながりで確認できる構成です。
+          </p>
+          <div class="process-flow" aria-label="要件定義から改善までの流れ">
+            <a class="process-step" href="../docs/requirements/要件定義.md">
+              <span class="step-label">01 Requirements</span>
+              <strong>要件定義</strong>
+              <p>目的、MVPスコープ、成功条件、安全上の注意へ分解する。</p>
+            </a>
+            <a class="process-step" href="../docs/basic-design/基本設計.md">
+              <span class="step-label">02 Basic Design</span>
+              <strong>基本設計</strong>
+              <p><code>sample</code> / <code>api</code>、責務分離、異常系、公開安全性を設計する。</p>
+            </a>
+            <a class="process-step" href="./pages/detail-design-phase1.html">
+              <span class="step-label">03 Detail Design</span>
+              <strong>詳細設計</strong>
+              <p>Provider、設定、ログ、テスト、公開前チェックを実装単位にする。</p>
+            </a>
+            <a class="process-step" href="https://github.com/yukino-nulldebug/news/tree/main/morning-news">
+              <span class="step-label">04 Build</span>
+              <strong>実装</strong>
+              <p>レポート生成、秘密情報マスク、pytestを小さく実装して確認する。</p>
+            </a>
+            <a class="process-step" href="./pages/learning.html">
+              <span class="step-label">05 Improve</span>
+              <strong>改善</strong>
+              <p>API制限、ログ設計、AI協働、異常系の学びを改善履歴に残す。</p>
+            </a>
+          </div>
+          <div class="table-wrap learning-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>設計意図</th>
+                  <th>実務上の配慮</th>
+                  <th>確認できる場所</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>未経験の外部API連携を、調査・設計・実装・検証の順に分解する。</td>
+                  <td>取得失敗、欠損値、外部データ全滅を同じ成功扱いにしない。</td>
+                  <td>要件定義、基本設計、<code>main.py</code>、integration tests</td>
+                </tr>
+                <tr>
+                  <td>第三者が同じ手順で確認できる状態を優先する。</td>
+                  <td>APIキーなしでも <code>sample</code> モードで出力と処理フローを確認できる。</td>
+                  <td><code>sample_data/</code>、<code>reports/sample-report.md</code>、README</td>
+                </tr>
+                <tr>
+                  <td>公開リポジトリとして安全に見せられる構成にする。</td>
+                  <td>APIキーを公開せず、ログ・レポートにも秘密情報を出さない。</td>
+                  <td><code>.env.example</code>、secret masking tests</td>
+                </tr>
+                <tr>
+                  <td>ニュースと市況を扱うアプリとして誤解を避ける。</td>
+                  <td>市況コメントは情報提供に限定し、「投資助言ではない」と明記する。</td>
+                  <td>要件定義、レポート生成、サンプルレポート</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         <section class="portfolio-section">
           <div class="section-heading">
             <p class="slide-index">Design Decisions</p>
@@ -257,9 +328,9 @@ python3 -m pytest</code></pre>
             <h3>詳細設計 Phase 6</h3>
             <p>README、.env.example、サンプルレポート、.gitignore、公開前チェックを確認する。</p>
           </a>
-          <a class="panel doc-link" href="../docs/learning/README.md">
+          <a class="panel doc-link" href="./pages/learning.html">
             <h3>学習ログ</h3>
-            <p>API制限対応、ファイル構成、ログ設計、AI協働の改善過程を確認する。</p>
+            <p>マーケットAPI対応を含む改善履歴を、日付ごとに変更点、判断理由、学びとして確認する。</p>
           </a>
         </div>
       </article>

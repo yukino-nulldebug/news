@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morning News 学習ログ</title>
+    <link rel="stylesheet" href="../assets/common.css">
+    <script defer src="../assets/deck-interactions.js"></script>
+  </head>
+  <body>
+    <header class="deck-header">
+      <p class="deck-label">Morning News Learning Logs</p>
+      <h1>学習ログ</h1>
+      <ul class="deck-meta">
+        <li>更新日: 2026-05-31</li>
+        <li>対象: 調査・設計・実装・検証・改善の記録</li>
+      </ul>
+      <nav class="deck-nav" aria-label="ドキュメント内ナビゲーション">
+        <a href="../index.html">ドキュメント一覧へ戻る</a>
+        <a href="./market-request-interval.html">マーケットAPIの学習ログを見る</a>
+        <a href="./requirements.html">要件定義を見る</a>
+        <a href="./basic-design.html">基本設計を見る</a>
+      </nav>
+    </header>
+
+    <main class="deck">
+      <article class="slide cover">
+        <p class="slide-index">Overview</p>
+        <h2>変更点と学びを日付ごとに確認する</h2>
+        <p class="lead">
+          Morning News では、実装中に出た問題を、調査、設計判断、実装、検証、次の改善へ分けて記録しています。
+          このページでは、Markdownの学習ログへ直接飛ばなくても、採用担当者が時系列で変更内容と設計意図を確認できるようにまとめています。
+        </p>
+        <div class="highlights">
+          <section class="highlight">
+            <h3>問題発見</h3>
+            <p>制約を言語化</p>
+          </section>
+          <section class="highlight">
+            <h3>設計反映</h3>
+            <p>資料とコードへ接続</p>
+          </section>
+          <section class="highlight">
+            <h3>改善履歴</h3>
+            <p>日付ごとに確認</p>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall">
+        <p class="slide-index">Timeline</p>
+        <h2>時系列の学習ログ</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>日付</th>
+                <th>テーマ</th>
+                <th>変更点・判断</th>
+                <th>学び</th>
+                <th>関連ページ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>2026-05-27</td>
+                <td>Alpha Vantage API制限と連続取得間隔の対応</td>
+                <td><code>MARKET_REQUEST_INTERVAL_SECONDS</code> を追加し、マーケット取得の失敗を警告として残しながら、取得できた対象でレポート生成を継続する方針を整理した。</td>
+                <td>外部APIは無料枠、速度、制限レスポンスに左右されるため、timeout、retry、待機秒数を設定化して、観測・調整・継続できる形にすることが重要だった。</td>
+                <td><a href="./market-request-interval.html">詳細</a></td>
+              </tr>
+              <tr>
+                <td>2026-05-28</td>
+                <td>ファイル構成とログ設計の整理</td>
+                <td><code>src/</code>、<code>tests/</code>、<code>docs/</code>、<code>logs/</code> の役割を整理し、第三者が処理責務を追える構成にした。</td>
+                <td>ファイル構成は、分かれていること自体よりも、なぜその責務に分けたかを説明できることが重要だった。</td>
+                <td><a href="./basic-design.html">基本設計</a></td>
+              </tr>
+              <tr>
+                <td>2026-05-28</td>
+                <td>AI協働で設計・実装を進めた記録</td>
+                <td>AIで要件整理、実装案、レビュー、テスト観点を出し、採用する仕様、安全性、最終差分は自分で確認する流れにした。</td>
+                <td>AI活用は、使った事実よりも、出力をどう検証し、どの成果物へ落としたかを示すほうが伝わりやすい。</td>
+                <td><a href="../index.html">ポートフォリオ概要</a></td>
+              </tr>
+              <tr>
+                <td>2026-05-31</td>
+                <td>学習プロセスと設計思考の見せ方</td>
+                <td>READMEとポートフォリオHTMLに、要件定義、基本設計、詳細設計、実装、改善の流れを追加した。</td>
+                <td>未経験領域は能力を直接主張するより、課題をどう分解し、設計資料とコードに落としたかを示すほうが伝わりやすい。</td>
+                <td><a href="../index.html">ポートフォリオ概要</a></td>
+              </tr>
+              <tr>
+                <td>2026-05-31</td>
+                <td>学習ログHTML一覧への統合</td>
+                <td>学習ログの入口をMarkdown直リンクからHTML一覧に変更し、日付ごとの変更点と関連ページを1ページで確認できるようにした。</td>
+                <td>採用側が最初に見る導線では、個別Markdownへ分散させるより、HTMLで時系列にまとめるほうが確認しやすい。</td>
+                <td><a href="./learning.html">このページ</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="slide slide-tall">
+        <p class="slide-index">Process</p>
+        <h2>学習ログで見せる流れ</h2>
+        <div class="phase-roadmap">
+          <section class="phase-card">
+            <span class="phase-label">01 Problem</span>
+            <strong>問題を具体化する</strong>
+            <p>API制限、ログ不足、見せ方の弱さなど、実装中に出た課題を言語化する。</p>
+          </section>
+          <section class="phase-card">
+            <span class="phase-label">02 Research</span>
+            <strong>制約を調査する</strong>
+            <p>外部API、設定、ログ、セキュリティ、テスト観点を確認する。</p>
+          </section>
+          <section class="phase-card">
+            <span class="phase-label">03 Design</span>
+            <strong>設計へ戻す</strong>
+            <p>要件定義、基本設計、詳細設計に戻し、実装判断として説明できる形にする。</p>
+          </section>
+          <section class="phase-card">
+            <span class="phase-label">04 Build</span>
+            <strong>コードへ落とす</strong>
+            <p>設定、Provider、例外、ログ、テスト、README、HTMLへ反映する。</p>
+          </section>
+          <section class="phase-card">
+            <span class="phase-label">05 Verify</span>
+            <strong>検証して残す</strong>
+            <p>差分、テスト、公開安全性、第三者の確認経路を見直す。</p>
+          </section>
+          <section class="phase-card">
+            <span class="phase-label">06 Improve</span>
+            <strong>次の改善へつなげる</strong>
+            <p>同じ課題を次回の判断基準として使えるように、学習ログへ残す。</p>
+          </section>
+        </div>
+      </article>
+
+      <article class="slide slide-tall">
+        <p class="slide-index">Notes</p>
+        <h2>公開時の注意点</h2>
+        <div class="two-col">
+          <section class="panel">
+            <h3>見せたいこと</h3>
+            <ul class="compact-list">
+              <li>未知の課題を段階的に分解すること。</li>
+              <li>調査・設計・実装・検証を反復すること。</li>
+              <li>学習内容を設計資料とコードに落とし込むこと。</li>
+              <li>再現性のある学習プロセスを意識すること。</li>
+            </ul>
+          </section>
+          <section class="panel">
+            <h3>安全性の配慮</h3>
+            <ul class="compact-list">
+              <li>APIキーや認証情報は公開しない。</li>
+              <li>市況コメントは投資助言ではないと明記する。</li>
+              <li><code>sample</code> モードで第三者が確認できるようにする。</li>
+              <li>取得失敗を警告や終了コードで区別する。</li>
+            </ul>
+          </section>
+        </div>
+      </article>
+    </main>
+  </body>
+</html>

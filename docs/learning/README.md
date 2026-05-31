@@ -4,6 +4,8 @@
 
 単なる「勉強したこと」ではなく、実装中に出た問題をどう調査し、どう設計へ反映し、何を学んだかを残します。採用側が見たときに、実務に近い改善プロセスを追えることを目的にしています。
 
+HTML版の一覧は `public/pages/learning.html` で確認できます。
+
 ## 読んでほしい観点
 
 | 観点 | 見せたいこと |
@@ -18,9 +20,11 @@
 
 | 日付 | テーマ | 内容 |
 | --- | --- | --- |
-| 2026-05-27 | [Alpha Vantage API の Rate Limit 対応](./2026-05-27-api-rate-limit.md) | 無料API制限に当たりやすい問題を、待機秒数とretry設定で扱えるようにした。 |
+| 2026-05-27 | [Alpha Vantage API制限と連続取得間隔の対応](./2026-05-27-api-rate-limit.md) | 無料API制限に当たりやすい問題を、`MARKET_REQUEST_INTERVAL_SECONDS`、timeout、retry、警告継続の設計として扱えるようにした。関連HTML: `public/pages/market-request-interval.html` |
 | 2026-05-28 | [ファイル構成とログ設計の整理](./2026-05-28-project-structure-and-logging.md) | `src/`、`tests/`、`docs/`、`logs/` の役割を整理し、第三者が追える構成にした。 |
 | 2026-05-28 | [AI協働で設計・実装を進めた記録](./2026-05-28-ai-assisted-implementation.md) | AIを使って要件整理、実装案、レビュー、テスト観点を出し、検証可能な成果物へ落とした。 |
+| 2026-05-31 | [学習プロセスと設計思考の見せ方](./2026-05-31-learning-process-and-design-thinking.md) | 要件定義から改善までの流れを、READMEとポートフォリオHTMLで確認できるようにした。 |
+| 2026-05-31 | [学習ログHTML一覧への統合](./2026-05-31-learning-html-index.md) | 学習ログの入口をMarkdown直リンクからHTML一覧に変更し、日付ごとに変更点と関連ページを確認できるようにした。 |
 
 ## 書き方
 
